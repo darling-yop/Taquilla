@@ -1,0 +1,125 @@
+.vista-accion {
+  width: var(--ancho-contenedor);
+  margin: 32px auto;
+  font-family: var(--fuente-texto);
+}
+
+.volver-explorar {
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+.formulario-cuenta {
+  width: min(100%, 440px);
+  margin: 0 auto;
+  padding: 24px;
+  border: 1px solid var(--color-borde);
+  border-radius: 14px;
+  background: var(--color-superficie);
+}
+
+.formulario-cuenta h1 {
+  margin-top: 0;
+}
+
+.formulario-cuenta form {
+  display: grid;
+  gap: 16px;
+  margin-block: 20px;
+}
+
+.formulario-cuenta label {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.formulario-cuenta input:not([type="checkbox"]) {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-borde-fuerte);
+  border-radius: 8px;
+  font: inherit;
+}
+
+.formulario-cuenta input:focus-visible,
+.formulario-cuenta button:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.formulario-cuenta button {
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 8px;
+  color: var(--color-sobre-primario);
+  background: var(--color-ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.formulario-cuenta button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.formulario-cuenta .terminos-cuenta {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-weight: 400;
+}
+
+.detalle-evento {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  padding: 24px;
+  border: 1px solid var(--color-borde);
+  border-radius: 14px;
+  background: var(--color-superficie);
+}
+
+.detalle-evento-afiche {
+  min-height: 180px;
+  border-radius: 10px;
+}
+
+.detalle-evento h1 {
+  margin-block: 8px;
+}
+
+.localidades-evento {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.localidades-evento li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+}
+
+.aviso-compra {
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--color-superficie-suave);
+}
+
+@media (min-width: 800px) {
+  .detalle-evento {
+    grid-template-columns: minmax(220px, 1fr) 2fr;
+  }
+
+  .detalle-evento-afiche {
+    min-height: 320px;
+  }
+}

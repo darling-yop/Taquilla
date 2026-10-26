@@ -57,9 +57,31 @@ const ICONOS = {
       <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z" />
     ),
   },
+
+  ubicacion: {
+    caja: 24,
+    tamano: 20,
+    trazos: (
+      <>
+        <path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11Z" />
+        <circle cx="12" cy="10" r="2.5" />
+      </>
+    ),
+  },
+
+  calendario: {
+    caja: 24,
+    tamano: 20,
+    trazos: (
+      <>
+        <rect x="3" y="5" width="18" height="16" rx="2" />
+        <path d="M3 10h18M8 3v4M16 3v4" />
+      </>
+    ),
+  },
 };
 
-export default function Icono({ nombre }) {
+export default function Icono({ nombre, tamano }) {
   const icono = ICONOS[nombre];
 
   if (!icono) {
@@ -67,7 +89,7 @@ export default function Icono({ nombre }) {
     return null;
   }
 
-  const lado = icono.tamano ?? icono.caja;
+  const lado = tamano ?? icono.tamano ?? icono.caja;
 
   return (
     <svg

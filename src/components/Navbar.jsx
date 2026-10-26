@@ -1,10 +1,44 @@
 
 import { useEffect, useRef, useState } from "react";
 import Icono from "./Icono.jsx";
-import "./Navbar.css";
+import "../styles/Navbar.css";
+
 
 const DESTINOS = {
+  inicio: "#inicio",
   explorar: "#explorar",
+  conciertos: "#categoria/conciertos",
+  teatro: "#categoria/teatro",
+  deportes: "#categoria/deportes",
+  festivales: "#categoria/festivales",
+};
+
+// Textos de respaldo: solo se usan si la API no entrega el JSON.
+const RESPALDO = {
+  es: {
+    navegacion: "Navegación principal",
+    logo: "taquilla, ir al inicio",
+    buscar: "Buscar",
+    abrirMenu: "Abrir menú",
+    cerrarMenu: "Cerrar menú",
+    idioma: "Cambiar idioma",
+    cargando: "Cargando navegación…",
+    error: "No pudimos cargar el menú.",
+    reintentar: "Reintentar",
+    ingresar: "Ingresar",
+  },
+  en: {
+    navegacion: "Main navigation",
+    logo: "taquilla, go to home",
+    buscar: "Search",
+    abrirMenu: "Open menu",
+    cerrarMenu: "Close menu",
+    idioma: "Change language",
+    cargando: "Loading navigation…",
+    error: "Navigation could not be loaded.",
+    reintentar: "Try again",
+    ingresar: "Log in",
+  },
 };
 
 export default function Navbar({
@@ -16,8 +50,8 @@ export default function Navbar({
   cambiarIdioma,
   activo,
   onBuscar,
-  textoGrande,
-  alternarTexto,
+  usuario,
+  onCerrarSesion,
 }) {
   const [abierto, setAbierto] = useState(false);
   const [busqueda, setBusqueda] = useState("");
@@ -25,17 +59,16 @@ export default function Navbar({
   const campoBusqueda = useRef(null);
 
   const nav = textos?.navbar;
-  const ingles = idioma === "en";
+  const t = RESPALDO[idioma] ?? RESPALDO.es;
 
-  const abrir =
-    textos?.menuMovil.abrir ?? (ingles ? "Open menu" : "Abrir menú");
-
-  const cerrar =
-    textos?.menuMovil.cerrar ?? (ingles ? "Close menu" : "Cerrar menú");
+  const abrir = textos?.menuMovil?.abrir ?? t.abrirMenu;
+  const cerrar = textos?.menuMovil?.cerrar ?? t.cerrarMenu;
 
   const enlaces = Object.entries(nav?.enlaces ?? {}).filter(
     ([clave]) => DESTINOS[clave],
   );
+  const salir = textos?.menuMovil?.botones?.cerrarSesion ??
+    (idioma === "en" ? "Sign out" : "Cerrar sesión");
 
   useEffect(() => {
     function cerrarConEscape(evento) {
@@ -62,7 +95,7 @@ export default function Navbar({
 
     if (!consulta) return;
 
-    onBuscar(consulta);
+    onBuscar?.(consulta);
     setAbierto(false);
   }
 
@@ -70,12 +103,12 @@ export default function Navbar({
     <header className="navbar">
       <nav
         className="navbar-interior"
-        aria-label={nav?.aria.menu ?? "Navegación principal"}
+        aria-label={nav?.aria?.menu ?? t.navegacion}
       >
         <a
           className="navbar-marca"
           href="#explorar"
-          aria-label={nav?.logo.aria ?? "explorar"}
+          aria-label={nav?.logo?.aria ?? t.logo}
           onClick={() => setAbierto(false)}
         >
           <span className="navbar-simbolo" aria-hidden="true">
@@ -99,23 +132,12 @@ export default function Navbar({
           <button
             type="button"
             className="navbar-icono"
-            aria-label={nav?.buscador.aria ?? "Buscar"}
+            aria-label={nav?.buscador?.aria ?? t.buscar}
             disabled={!nav}
             onClick={abrirBusqueda}
           >
             <Icono nombre="buscar" />
           </button>
-
-          {nav && (
-            <a
-              className="navbar-icono"
-              href="#favoritos"
-              aria-label={nav.botones.favoritos}
-              onClick={() => setAbierto(false)}
-            >
-              <Icono nombre="favoritos" />
-            </a>
-          )}
 
           <button
             ref={botonMenu}
@@ -137,20 +159,16 @@ export default function Navbar({
         >
           {cargando && (
             <p className="navbar-estado" role="status">
-              {ingles ? "Loading navigation…" : "Cargando navegación…"}
+              {t.cargando}
             </p>
           )}
 
           {error && (
             <div className="navbar-estado" role="alert">
-              <p>
-                {ingles
-                  ? "Navigation could not be loaded."
-                  : "No pudimos cargar el menú."}
-              </p>
+              <p>{t.error}</p>
 
               <button type="button" onClick={recargar}>
-                {ingles ? "Try again" : "Reintentar"}
+                {t.reintentar}
               </button>
             </div>
           )}
@@ -174,10 +192,13 @@ export default function Navbar({
               <form
                 className="navbar-buscador"
                 role="search"
-                aria-label={nav.buscador.aria}
+                aria-label={nav?.buscador?.aria ?? t.buscar}
                 onSubmit={buscar}
               >
-                <button type="submit" aria-label={nav.buscador.boton}>
+                <button
+                  type="submit"
+                  aria-label={nav?.buscador?.boton ?? t.buscar}
+                >
                   <Icono nombre="buscar" />
                 </button>
 
@@ -188,8 +209,8 @@ export default function Navbar({
                   type="search"
                   value={busqueda}
                   onChange={(evento) => setBusqueda(evento.target.value)}
-                  placeholder={nav.buscador.placeholder}
-                  aria-label={nav.buscador.aria}
+                  placeholder={nav?.buscador?.placeholder}
+                  aria-label={nav?.buscador?.aria ?? t.buscar}
                   required
                 />
               </form>
@@ -200,7 +221,7 @@ export default function Navbar({
             <div
               className="navbar-idioma"
               role="group"
-              aria-label={nav?.aria.idioma ?? "Cambiar idioma"}
+              aria-label={nav?.aria?.idioma ?? t.idioma}
             >
               {["es", "en"].map((opcion) => (
                 <button
@@ -217,22 +238,35 @@ export default function Navbar({
               ))}
             </div>
 
-            <a
-              className="navbar-boton-ingresar"
-              href="#ingresar"
-              onClick={() => setAbierto(false)}
-            >
-              {ingles ? "Log in" : "Ingresar"}
-            </a>
-
-            {nav && (
+            {usuario ? (
+              <>
+                <span className="navbar-usuario">{usuario.nombre}</span>
+                <button
+                  type="button"
+                  className="navbar-accion"
+                  onClick={onCerrarSesion}
+                >
+                  {salir}
+                </button>
+              </>
+            ) : (
+              <>
+                <a
+                  className="navbar-boton-ingresar"
+                  href="#ingresar"
+                  onClick={() => setAbierto(false)}
+                >
+                  {nav?.botones?.ingresar ?? t.ingresar}
+                </a>
               <a
                 className="navbar-accion"
                 href="#crearCuenta"
                 onClick={() => setAbierto(false)}
               >
-                {nav.botones.crearCuenta}
-              </a>
+                  {nav?.botones?.crearCuenta ??
+                    (idioma === "en" ? "Create account" : "Crear cuenta")}
+                </a>
+              </>
             )}
           </div>
         </div>
