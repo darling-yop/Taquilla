@@ -57,6 +57,16 @@ const ICONOS = {
       <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z" />
     ),
   },
+    logo: {
+    caja: 24,
+    tamano: 20,
+    trazos: (
+      <g strokeWidth="2.5">
+        <path d="M4 7h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4V7Z" />
+        <path d="M14 7v3m0 4v3" strokeDasharray="1 2" />
+      </g>
+    ),
+  },
 
   ubicacion: {
     caja: 24,

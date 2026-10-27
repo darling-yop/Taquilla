@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTextos } from "./hooks/useTextos.js";
 import { useEventos } from "./hooks/useEventos.js";
-import {
-  cerrarSesion,
-  consultarSesion,
-} from "./services/cuentaService.js";
+import { cerrarSesion, consultarSesion } from "./services/cuentaService.js";
 import { adaptarInicio } from "./utils/textosInicio.js";
 import "./App.css";
 import Navbar from "./components/Navbar.jsx";
@@ -13,6 +10,8 @@ import Categorias from "./components/Categorias.jsx";
 import SeccionEventos from "./components/SeccionEventos.jsx";
 import Cuenta from "./components/Cuenta.jsx";
 import DetalleEvento from "./components/DetalleEvento.jsx";
+import Footer from "./components/Footer.jsx";
+import Explorar from "./components/Explorar.jsx";
 
 function leerRuta() {
   const hash = window.location.hash.slice(1);
@@ -34,7 +33,13 @@ function leerRuta() {
       filtros: Object.fromEntries(new URLSearchParams(query)),
     };
   }
-  if (pagina === "explorar" || pagina === "ingresar" || pagina === "crearCuenta") {
+   if (pagina === "explorar") {
+    return {
+      tipo: "explorar",
+      filtros: Object.fromEntries(new URLSearchParams(query)),
+    };
+  }
+  if (pagina === "ingresar" || pagina === "crearCuenta") {
     return { tipo: pagina };
   }
   return { tipo: "inicio" };
@@ -79,16 +84,12 @@ function App() {
   useEffect(() => {
     if (ruta.tipo === "categoria") {
       contenido.cargarResultados({ categoria: ruta.categoria });
-    } else if (ruta.tipo === "buscar") {
+      } else if (ruta.tipo === "buscar" || ruta.tipo === "explorar") {
       contenido.cargarResultados(ruta.filtros);
     } else {
       contenido.limpiarResultados();
     }
-  }, [
-    ruta,
-    contenido.cargarResultados,
-    contenido.limpiarResultados,
-  ]);
+  }, [ruta, contenido.cargarResultados, contenido.limpiarResultados]);
 
   useEffect(() => {
     document.documentElement.lang = idioma;
@@ -113,6 +114,16 @@ function App() {
 
     navegar(`buscar?${parametros.toString()}`);
   }
+    function filtrarExplorar(filtros = {}) {
+    const parametros = new URLSearchParams();
+
+        for (const clave of ["q", "categoria", "ciudad", "fecha", "desde", "hasta", "pagina"]) {
+      if (filtros[clave]) parametros.set(clave, filtros[clave]);
+    }
+
+    const consulta = parametros.toString();
+    navegar(consulta ? `explorar?${consulta}` : "explorar");
+  }
 
   async function salir() {
     try {
@@ -126,19 +137,21 @@ function App() {
 
   const catalogoActivo = ["categoria", "buscar"].includes(ruta.tipo);
   const mostrarInicioPublico = ["inicio", "explorar"].includes(ruta.tipo);
-  const activo =
+   const activo =
     ruta.tipo === "categoria"
       ? ruta.categoria
-      : catalogoActivo
+      : catalogoActivo || ruta.tipo === "explorar"
         ? "explorar"
         : undefined;
   const nombreCategoria =
     contenido.nombresCategoria?.[ruta.categoria] ?? ruta.categoria;
-  const tituloResultados =
+
+   const tituloResultados =
     ruta.tipo === "categoria"
       ? nombreCategoria
-      : datos.textos?.paginas?.explorar?.titulo ??
-        (ingles ? "Explore events" : "Explorar eventos");
+      : (datos.textos?.paginas?.explorar?.encabezado?.titulo ??
+        (ingles ? "Explore events" : "Explorar eventos"));
+
   const fechaNoDisponible =
     ruta.tipo === "buscar" && Boolean(ruta.filtros?.fecha);
 
@@ -170,6 +183,23 @@ function App() {
           textos={datos.textos}
           idioma={idioma}
           onLogin={setUsuario}
+        />
+            ) : ruta.tipo === "explorar" ? (
+        <Explorar
+          textos={datos.textos}
+          idioma={idioma}
+          filtros={ruta.filtros}
+          categorias={contenido.categorias?.items ?? []}
+          nombresCategoria={contenido.nombresCategoria}
+          etiquetas={contenido.etiquetas}
+          resultados={contenido.resultados}
+          paginacion={contenido.paginacion}
+          cargando={
+            contenido.cargandoResultados || contenido.filtrosResultados === null
+          }
+          error={contenido.errorResultados}
+          onFiltrar={filtrarExplorar}
+          onReintentar={() => contenido.cargarResultados(ruta.filtros)}
         />
       ) : (
         <main id="explorar">
@@ -316,10 +346,11 @@ function App() {
               )}
             </>
           )}
-        </main>
-      )}
-    </div>
-  );
+          </main>
+    )}
+    <Footer textos={datos.textos} idioma={idioma} />
+  </div>
+);
 }
 
 export default App;
