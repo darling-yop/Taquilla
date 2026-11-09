@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
 import { proyecto } from "../../config/proyecto";
 import { usePreferencias } from "../../context/PreferenciasContext";
-import { interfaz } from "../../data/interfaz";
 import Navbar from "../Navbar/Navbar";
 import Footer from "../Footer/Footer";
 import SaltarContenido from "../SaltarContenido/SaltarContenido";
@@ -26,7 +25,8 @@ export default function LayoutPublico({
   inicioDestino?: string;
   buscarDestino?: string;
 }) {
-  const { idioma, cambiarIdioma } = usePreferencias();
+  const { idioma, cambiarIdioma, textos, errorTextos, recargarTextos } =
+    usePreferencias();
   const [cookiesAbiertas, setCookiesAbiertas] = useState(false);
   const disparador = useRef<HTMLElement | null>(null);
   function abrirCookies() {
@@ -42,12 +42,21 @@ export default function LayoutPublico({
   }
   return (
     <div className={`landing ${proyecto.id}`}>
-      <SaltarContenido texto={interfaz[idioma].saltar} />
+      {errorTextos && (
+        <p className="error-traducciones" role="alert">
+          {textos.comun.errorTraducciones}
+          <button type="button" onClick={recargarTextos}>
+            {textos.comun.reintentar}
+          </button>
+        </p>
+      )}
+      <SaltarContenido texto={textos.interfaz.saltar} />
       <Navbar
         nombre={proyecto.nombre}
         tipo={proyecto.id}
         idioma={idioma}
         onCambiarIdioma={cambiarIdioma}
+        textos={textos}
         destino={destino}
         etiqueta={etiqueta}
         inicioDestino={inicioDestino}
@@ -60,10 +69,9 @@ export default function LayoutPublico({
       <Footer
         nombre={proyecto.nombre}
         tipo={proyecto.id}
-        idioma={idioma}
+        textos={textos}
         descripcion={descripcion}
         destino={destino}
-        etiqueta={etiqueta}
         inicioDestino={inicioDestino}
         onCuenta={onCuenta}
         onAbrirCookies={abrirCookies}

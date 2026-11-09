@@ -5,10 +5,12 @@ export default function SelectorIdioma({
   idioma,
   onCambiar,
   etiqueta,
+  nombres,
 }: {
   idioma: Idioma;
   onCambiar: (idioma: Idioma) => void;
   etiqueta: string;
+  nombres: Record<Idioma, string>;
 }) {
   return (
     <div className="idiomas-home" role="group" aria-label={etiqueta}>
@@ -20,7 +22,7 @@ export default function SelectorIdioma({
           aria-pressed={idioma === valor}
           onClick={() => onCambiar(valor)}
         >
-          {valor.toUpperCase()}
+          {nombres[valor]}
         </button>
       ))}
     </div>

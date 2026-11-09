@@ -3,12 +3,18 @@ import "./Marca.css";
 export default function Marca({
   nombre,
   tipo,
+  ariaLabel,
 }: {
   nombre: string;
   tipo: string;
+  ariaLabel?: string;
 }) {
   return (
-    <Link className="marca-home" href="/" aria-label={`${nombre}, inicio`}>
+    <Link
+      className="marca-home"
+      href="/"
+      aria-label={ariaLabel ?? `${nombre}, inicio`}
+    >
       <span className={`emblema emblema-${tipo}`} aria-hidden="true">
         {tipo === "sintonia" ? (
           <svg viewBox="0 0 32 32">

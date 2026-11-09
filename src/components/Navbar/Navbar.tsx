@@ -4,15 +4,16 @@ import { useEffect, useId, useRef, useState } from "react";
 import Marca from "../Marca/Marca";
 import MenuMovil from "../MenuMovil/MenuMovil";
 import SelectorIdioma from "../SelectorIdioma/SelectorIdioma";
-import { interfaz } from "../../data/interfaz";
 import type { Idioma } from "../../data/interfaz";
 import type { TipoCuenta } from "../../types";
+import type { TextosAplicacion } from "../../data/textos";
 import "./Navbar.css";
 export default function Navbar({
   nombre,
   tipo,
   idioma,
   onCambiarIdioma,
+  textos,
   destino,
   etiqueta,
   inicioDestino = "#contenido",
@@ -23,6 +24,7 @@ export default function Navbar({
   tipo: string;
   idioma: Idioma;
   onCambiarIdioma: (idioma: Idioma) => void;
+  textos: TextosAplicacion;
   destino: string;
   etiqueta: string;
   inicioDestino?: string;
@@ -32,7 +34,7 @@ export default function Navbar({
   const [abierto, setAbierto] = useState(false);
   const boton = useRef<HTMLButtonElement>(null);
   const id = useId();
-  const t = interfaz[idioma];
+  const t = textos.interfaz;
 
   useEffect(() => {
     const escritorio = window.matchMedia("(min-width: 641px)");
@@ -64,7 +66,7 @@ export default function Navbar({
       }}
     >
       <div className="ancho-home fila-cabecera">
-        <Marca nombre={nombre} tipo={tipo} />
+        <Marca nombre={nombre} tipo={tipo} ariaLabel={textos.logoAria} />
         <button
           type="button"
           className="ingreso-movil"
@@ -108,6 +110,7 @@ export default function Navbar({
               idioma={idioma}
               onCambiar={onCambiarIdioma}
               etiqueta={t.idioma}
+              nombres={textos.idiomas}
             />
             <button
               type="button"

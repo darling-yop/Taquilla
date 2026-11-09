@@ -14,9 +14,10 @@ import {
   adaptarCiudadInicio,
 } from "../../services/inicio";
 import { usePreferencias } from "../../context/PreferenciasContext";
-import { categoriasEn, dinero } from "../../data/catalogo";
+import { dinero } from "../../data/catalogo";
 import type { CategoriaEvento, Evento } from "../../types";
 import "./ExplorarPage.css";
+import { formatearTexto } from "../../services/textos";
 
 const tamanioPagina = 12;
 const ordenes = ["fecha", "precio", "popularidad"] as const;
@@ -75,9 +76,9 @@ export default function ExplorarPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const parametros = searchParams ?? new URLSearchParams();
-  const { idioma } = usePreferencias();
+  const { idioma, textos } = usePreferencias();
   const en = idioma === "en";
-  const { detalle, setDetalle, abrirCuenta } = useDetalle(idioma);
+  const { detalle, setDetalle, abrirCuenta } = useDetalle(textos);
   const categoriasRecurso = useRecurso("/categorias", adaptarCategoriaInicio);
   const ciudadesRecurso = useRecurso("/ciudades", adaptarCiudadInicio);
   const categorias = categoriasRecurso.datos ?? [];
@@ -166,7 +167,7 @@ export default function ExplorarPage() {
           <p>{dinero(evento.precio)} COP</p>
         </div>
       ),
-      cerrar: en ? "Close" : "Cerrar",
+      cerrar: textos.comun.cerrar,
     });
   }
 
@@ -179,67 +180,57 @@ export default function ExplorarPage() {
       destino="/explorar"
       inicioDestino="/"
       buscarDestino="#filtros-explorar"
-      etiqueta={en ? "Explore" : "Explorar"}
-      descripcion={
-        en
-          ? "Concerts, theatre, sports and festivals in one place."
-          : "Conciertos, teatro, deportes y festivales en un solo lugar."
-      }
+      etiqueta={textos.interfaz.explora}
+      descripcion={textos.pie.descripcion}
       onCuenta={abrirCuenta}
     >
       <div className="ancho-home pagina-explorar">
         <header className="encabezado-explorar">
-          <p className="sobrelinea-explorar">
-            {en ? "Find your next plan" : "Encuentra tu próximo plan"}
-          </p>
-          <h1>{en ? "Explore events" : "Explorar eventos"}</h1>
-          <p>
-            {en
-              ? "Search events by name, location, date or category."
-              : "Busca eventos por nombre, ciudad, fecha o categoría."}
-          </p>
+          <p className="sobrelinea-explorar">{textos.explorar.eyebrow}</p>
+          <h1>{textos.explorar.titulo.replace(" · Taquilla", "")}</h1>
+          <p>{textos.explorar.descripcion}</p>
         </header>
 
         <form
           id="filtros-explorar"
           className="filtros-explorar"
           role="search"
-          aria-label={en ? "Filter events" : "Filtrar eventos"}
+          aria-label={textos.explorar.filtroAria}
           key={parametros.toString()}
           onSubmit={buscar}
         >
           <label>
-            <span>{en ? "Event or artist" : "Evento o artista"}</span>
+            <span>{textos.explorar.eventoArtista}</span>
             <input
               type="search"
               name="q"
               defaultValue={consulta}
-              placeholder={en ? "Search events" : "Buscar eventos"}
+              placeholder={textos.explorar.buscarEventos}
             />
           </label>
           <label>
-            <span>{en ? "Category" : "Categoría"}</span>
+            <span>{textos.explorar.categoria}</span>
             <select
               name="categoria"
               defaultValue={categoriaSeleccionada}
               disabled={categoriasRecurso.cargando || !!categoriasRecurso.error}
             >
-              <option value="">{en ? "All categories" : "Todas"}</option>
+              <option value="">{textos.explorar.todasCategorias}</option>
               {categorias.map((opcion) => (
                 <option key={opcion.id} value={opcion.id.toLowerCase()}>
-                  {en ? categoriasEn[opcion.id] : opcion.nombre}
+                  {textos.categorias[opcion.id]}
                 </option>
               ))}
             </select>
           </label>
           <label>
-            <span>{en ? "City" : "Ciudad"}</span>
+            <span>{textos.explorar.ciudad}</span>
             <select
               name="ciudad"
               defaultValue={ciudad}
               disabled={ciudadesRecurso.cargando || !!ciudadesRecurso.error}
             >
-              <option value="">{en ? "All cities" : "Todas"}</option>
+              <option value="">{textos.explorar.todasCiudades}</option>
               {ciudades.map((opcion) => (
                 <option key={opcion} value={opcion}>
                   {opcion}
@@ -248,50 +239,46 @@ export default function ExplorarPage() {
             </select>
           </label>
           <label>
-            <span>{en ? "Date" : "Fecha"}</span>
+            <span>{textos.explorar.fecha}</span>
             <input type="date" name="fecha" defaultValue={fecha} />
           </label>
           <label>
-            <span>{en ? "Sort by" : "Ordenar por"}</span>
+            <span>{textos.explorar.orden}</span>
             <select name="orden" defaultValue={orden}>
-              <option value="fecha">{en ? "Date" : "Fecha"}</option>
-              <option value="precio">
-                {en ? "Price: low to high" : "Precio: menor a mayor"}
-              </option>
+              <option value="fecha">{textos.explorar.ordenFecha}</option>
+              <option value="precio">{textos.explorar.ordenPrecio}</option>
               <option value="popularidad">
-                {en ? "Popularity" : "Popularidad"}
+                {textos.explorar.ordenPopularidad}
               </option>
             </select>
           </label>
           <div className="acciones-filtros">
             <button type="submit" className="boton-home primario">
-              {en ? "Apply filters" : "Aplicar filtros"}
+              {formatearTexto(textos.explorar.aplicar, {
+                cantidad: String(eventosFiltrados.length),
+              })}
             </button>
             <button
               type="button"
               className="boton-limpiar-filtros"
               onClick={() => router.push("/explorar")}
             >
-              {en ? "Clear" : "Limpiar"}
+              {textos.explorar.limpiar}
             </button>
           </div>
         </form>
 
         {(categoriasRecurso.error || ciudadesRecurso.error) && (
           <div className="error-opciones-filtros" role="alert">
-            <p>
-              {en
-                ? "Some filter options couldn't be loaded."
-                : "No se pudieron cargar algunas opciones de filtro."}
-            </p>
+            <p>{textos.explorar.errorOpciones}</p>
             {categoriasRecurso.error && (
               <button type="button" onClick={categoriasRecurso.recargar}>
-                {en ? "Retry categories" : "Reintentar categorías"}
+                {textos.explorar.reintentarCategorias}
               </button>
             )}
             {ciudadesRecurso.error && (
               <button type="button" onClick={ciudadesRecurso.recargar}>
-                {en ? "Retry cities" : "Reintentar ciudades"}
+                {textos.explorar.reintentarCiudades}
               </button>
             )}
           </div>
@@ -303,19 +290,18 @@ export default function ExplorarPage() {
         >
           <div className="titulo-seccion">
             <div>
-              <h2 id="titulo-resultados">{en ? "Events" : "Eventos"}</h2>
+              <h2 id="titulo-resultados">{textos.explorar.tituloResultados}</h2>
               <p role="status" aria-live="polite">
                 {catalogo.cargando
-                  ? en
-                    ? "Loading events…"
-                    : "Cargando eventos…"
+                  ? textos.explorar.cargando
                   : catalogo.error
-                    ? en
-                      ? "Events could not be loaded."
-                      : "No se pudieron cargar los eventos."
-                    : `${eventosFiltrados.length} ${
-                        en ? "events found" : "eventos encontrados"
-                      }`}
+                    ? textos.explorar.errorCatalogo
+                    : formatearTexto(
+                        eventosFiltrados.length === 1
+                          ? textos.explorar.resultadoUno
+                          : textos.explorar.resultados,
+                        { cantidad: String(eventosFiltrados.length) },
+                      )}
               </p>
             </div>
           </div>
@@ -333,17 +319,13 @@ export default function ExplorarPage() {
           )}
           {catalogo.error && (
             <div className="estado-eventos" role="alert">
-              <p>
-                {en
-                  ? "We couldn't load the catalog. Check your connection and try again."
-                  : "No pudimos cargar el catálogo. Revisa tu conexión e inténtalo de nuevo."}
-              </p>
+              <p>{textos.explorar.errorCatalogo}</p>
               <button
                 type="button"
                 className="boton-home primario"
                 onClick={catalogo.recargar}
               >
-                {en ? "Try again" : "Reintentar"}
+                {textos.explorar.reintentar}
               </button>
             </div>
           )}
@@ -363,19 +345,15 @@ export default function ExplorarPage() {
             !catalogo.error &&
             eventosFiltrados.length === 0 && (
               <div className="sin-resultados">
-                <h3>{en ? "No events found" : "No encontramos eventos"}</h3>
-                <p>
-                  {en
-                    ? "Try changing or clearing your filters."
-                    : "Prueba cambiando o limpiando los filtros."}
-                </p>
+                <h3>{textos.explorar.sinResultados}</h3>
+                <p>{textos.explorar.sinResultadosDescripcion}</p>
               </div>
             )}
 
           {!catalogo.cargando && !catalogo.error && paginas > 1 && (
             <nav
               className="paginacion-explorar"
-              aria-label={en ? "Event pages" : "Páginas de eventos"}
+              aria-label={textos.explorar.navPaginas}
             >
               <button
                 type="button"
@@ -391,10 +369,10 @@ export default function ExplorarPage() {
                   })
                 }
               >
-                {en ? "Previous" : "Anterior"}
+                {textos.explorar.anterior}
               </button>
               <span aria-current="page">
-                {en ? "Page" : "Página"} {pagina} {en ? "of" : "de"} {paginas}
+                {textos.explorar.pagina} {pagina} {textos.explorar.de} {paginas}
               </span>
               <button
                 type="button"
@@ -410,7 +388,7 @@ export default function ExplorarPage() {
                   })
                 }
               >
-                {en ? "Next" : "Siguiente"}
+                {textos.explorar.siguiente}
               </button>
             </nav>
           )}

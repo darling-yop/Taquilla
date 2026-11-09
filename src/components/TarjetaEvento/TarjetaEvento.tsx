@@ -1,6 +1,7 @@
 import AficheEvento from "../AficheEvento/AficheEvento";
 import IconoEvento from "../IconoEvento/IconoEvento";
-import { categoriasEn, dinero } from "../../data/catalogo";
+import { dinero } from "../../data/catalogo";
+import { usePreferencias } from "../../context/PreferenciasContext";
 import type { Evento } from "../../types";
 import "./TarjetaEvento.css";
 export default function TarjetaEvento({
@@ -12,6 +13,7 @@ export default function TarjetaEvento({
   onAbrir: (evento: Evento) => void;
   en: boolean;
 }) {
+  const { textos } = usePreferencias();
   return (
     <article className="tarjeta-evento">
       <AficheEvento
@@ -21,7 +23,7 @@ export default function TarjetaEvento({
       />
       <div className="contenido-evento">
         <span className="etiqueta-evento">
-          {en ? categoriasEn[evento.categoria] : evento.etiqueta}
+          {textos.categorias[evento.categoria]}
         </span>
         <h3>{evento.nombre}</h3>
         <p>
@@ -40,15 +42,15 @@ export default function TarjetaEvento({
         </p>
         <div className="precio-evento">
           <div>
-            <small>{en ? "From" : "Desde"}</small>
+            <small>{textos.comun.desde}</small>
             <strong>{dinero(evento.precio)}</strong>
           </div>
           <button
             className="boton-home secundario"
-            aria-label={`${en ? "View event" : "Ver evento"}: ${evento.nombre}`}
+            aria-label={`${textos.comun.verEvento}: ${evento.nombre}`}
             onClick={() => onAbrir(evento)}
           >
-            {en ? "View event" : "Ver evento"}
+            {textos.comun.verEvento}
           </button>
         </div>
       </div>

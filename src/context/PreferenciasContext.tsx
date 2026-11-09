@@ -1,9 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { guardarCookie, borrarCookie } from "../services/cookies";
 import { proyecto } from "../config/proyecto";
+import { obtenerTextos, textosAlternativos } from "../services/textos";
+import type { TextosAplicacion } from "../data/textos";
 
 type Consentimiento = "aceptado" | "rechazado" | null;
 type Idioma = "es" | "en";
@@ -15,6 +18,10 @@ interface Preferencias {
   preferenciasCargadas: boolean;
   guardarConsentimiento: (permitir: boolean) => boolean;
   error: boolean;
+  textos: TextosAplicacion;
+  textosCargando: boolean;
+  errorTextos: boolean;
+  recargarTextos: () => void;
 }
 
 const PreferenciasContext = createContext<Preferencias | null>(null);
@@ -28,10 +35,24 @@ export function PreferenciasProvider({
   initialConsentimiento?: Consentimiento;
   initialIdioma?: Idioma;
 }) {
+  const pathname = usePathname() ?? "";
   const [consentimiento, setConsentimiento] = useState(initialConsentimiento);
   const [idioma, setIdioma] = useState(initialIdioma);
   const [error, setError] = useState(false);
   const [preferenciasCargadas, setPreferenciasCargadas] = useState(false);
+  const [textosPorIdioma, setTextosPorIdioma] = useState<
+    Partial<Record<Idioma, TextosAplicacion>>
+  >({});
+  const [erroresTextos, setErroresTextos] = useState<
+    Partial<Record<Idioma, boolean>>
+  >({});
+  const [intentoTextos, setIntentoTextos] = useState(0);
+  const textos = useMemo(
+    () => textosPorIdioma[idioma] ?? textosAlternativos(idioma),
+    [idioma, textosPorIdioma],
+  );
+  const textosCargando = !textosPorIdioma[idioma] && !erroresTextos[idioma];
+  const errorTextos = Boolean(erroresTextos[idioma]);
   useEffect(() => {
     let falloAlLeer = false;
     let consentimientoLocal: Consentimiento = null;
@@ -44,20 +65,18 @@ export function PreferenciasProvider({
       if (valor === "aceptado" || valor === "rechazado") {
         consentimientoLocal = valor;
       }
-      if (
-        consentimientoLocal === "aceptado" &&
-        window.localStorage.getItem(`${proyecto.id}_idioma`) === "en"
-      ) {
-        idiomaLocal = "en";
+      const idiomaGuardado = window.localStorage.getItem(
+        `${proyecto.id}_idioma`,
+      );
+      if (idiomaGuardado === "en" || idiomaGuardado === "es") {
+        idiomaLocal = idiomaGuardado;
       }
     } catch {
       falloAlLeer = true;
     }
 
     const consentimientoFinal = consentimientoLocal ?? initialConsentimiento;
-    const idiomaFinal =
-      idiomaLocal ??
-      (consentimientoFinal === "aceptado" ? initialIdioma : "es");
+    const idiomaFinal = idiomaLocal ?? initialIdioma;
 
     try {
       if (consentimientoFinal) {
@@ -65,9 +84,6 @@ export function PreferenciasProvider({
           `${proyecto.id}_consentimiento`,
           consentimientoFinal,
         );
-      }
-      if (consentimientoFinal === "aceptado") {
-        window.localStorage.setItem(`${proyecto.id}_idioma`, idiomaFinal);
       }
     } catch {
       falloAlLeer = true;
@@ -91,14 +107,48 @@ export function PreferenciasProvider({
     return () => window.cancelAnimationFrame(frame);
   }, [initialConsentimiento, initialIdioma]);
   useEffect(() => {
+    const controlador = new AbortController();
+    let vigente = true;
+    obtenerTextos(idioma, controlador.signal)
+      .then((textosApi) => {
+        if (vigente) {
+          setTextosPorIdioma((actual) => ({ ...actual, [idioma]: textosApi }));
+          setErroresTextos((actual) => ({ ...actual, [idioma]: false }));
+        }
+      })
+      .catch((error: unknown) => {
+        if (
+          vigente &&
+          !(error instanceof Error && error.name === "AbortError")
+        ) {
+          setErroresTextos((actual) => ({ ...actual, [idioma]: true }));
+        }
+      });
+    return () => {
+      vigente = false;
+      controlador.abort();
+    };
+  }, [idioma, intentoTextos]);
+
+  useEffect(() => {
     document.documentElement.lang = idioma;
-    document.title = `${proyecto.nombre} · ${idioma === "en" ? "Home" : "Inicio"}`;
-  }, [idioma]);
+    const esExplorar = pathname.startsWith("/explorar");
+    document.title = esExplorar
+      ? textos.explorar.tituloSeo
+      : textos.inicio.tituloSeo;
+    document
+      .querySelectorAll<HTMLMetaElement>('meta[name="description"]')
+      .forEach((descripcion) => {
+        descripcion.content = esExplorar
+          ? textos.explorar.descripcionSeo
+          : textos.inicio.descripcionSeo;
+      });
+  }, [idioma, pathname, textos]);
   function cambiarIdioma(valor: Idioma) {
     setIdioma(valor);
     try {
+      window.localStorage.setItem(`${proyecto.id}_idioma`, valor);
       if (consentimiento === "aceptado") {
-        window.localStorage.setItem(`${proyecto.id}_idioma`, valor);
         guardarCookie("idioma", valor);
       }
       setError(false);
@@ -124,16 +174,19 @@ export function PreferenciasProvider({
     } catch {
       falloAlGuardar = true;
     }
-    try {
-      if (permitir) {
+    if (permitir) {
+      try {
         window.localStorage.setItem(`${proyecto.id}_idioma`, idioma);
         guardarCookie("idioma", idioma);
-      } else {
-        window.localStorage.removeItem(`${proyecto.id}_idioma`);
-        borrarCookie("idioma");
+      } catch {
+        falloAlGuardar = true;
       }
-    } catch {
-      falloAlGuardar = true;
+    } else {
+      try {
+        borrarCookie("idioma");
+      } catch {
+        falloAlGuardar = true;
+      }
     }
     setError(falloAlGuardar);
     return guardado;
@@ -147,6 +200,10 @@ export function PreferenciasProvider({
         preferenciasCargadas,
         guardarConsentimiento,
         error,
+        textos,
+        textosCargando,
+        errorTextos,
+        recargarTextos: () => setIntentoTextos((valor) => valor + 1),
       }}
     >
       {children}

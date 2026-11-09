@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { usePreferencias } from "../../context/PreferenciasContext";
-import { interfaz } from "../../data/interfaz";
 import BannerCookies from "../BannerCookies/BannerCookies";
 import PreferenciasCookies from "../PreferenciasCookies/PreferenciasCookies";
 import "./GestorCookies.css";
@@ -14,14 +13,14 @@ export default function GestorCookies({
   onCerrar: () => void;
 }) {
   const {
-    idioma,
     consentimiento,
     preferenciasCargadas,
     guardarConsentimiento,
     error,
+    textos,
   } = usePreferencias();
   const [mensaje, setMensaje] = useState(false);
-  const t = interfaz[idioma];
+  const t = textos.interfaz;
   function guardar(permitir: boolean) {
     const guardado = guardarConsentimiento(permitir);
     if (guardado) {

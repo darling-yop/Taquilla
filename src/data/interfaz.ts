@@ -15,7 +15,7 @@ export const interfaz = {
     saltar: "Saltar al contenido",
     banner: "Preferencias del navegador",
     descripcion:
-      "Puedes permitir que este proyecto recuerde tu idioma. No utilizamos cookies de analítica ni publicidad.",
+      "El idioma elegido se guarda en este navegador para conservarlo al navegar y recargar. No utilizamos cookies de analítica ni publicidad.",
     aceptar: "Aceptar preferencias",
     rechazar: "Rechazar opcionales",
     configurar: "Configurar",
@@ -23,8 +23,9 @@ export const interfaz = {
     cerrar: "Cerrar preferencias",
     necesarias: "Necesarias",
     necesariasTexto: "Guardan tu decisión de consentimiento. Siempre activas.",
-    preferencias: "Recordar idioma",
-    preferenciasTexto: "Conserva el idioma elegido en este navegador.",
+    preferencias: "Guardar preferencia de idioma en una cookie",
+    preferenciasTexto:
+      "El idioma se guarda en el navegador para mantener la interfaz; esta opción controla su cookie.",
     guardado: "Preferencias guardadas.",
     error: "No pudimos guardar la decisión en este navegador.",
   },
@@ -44,7 +45,7 @@ export const interfaz = {
     saltar: "Skip to content",
     banner: "Browser preferences",
     descripcion:
-      "You can allow this project to remember your language. We do not use analytics or advertising cookies.",
+      "Your selected language is saved in this browser so it stays the same when you navigate or reload. We do not use analytics or advertising cookies.",
     aceptar: "Accept preferences",
     rechazar: "Reject optional",
     configurar: "Configure",
@@ -52,8 +53,9 @@ export const interfaz = {
     cerrar: "Close preferences",
     necesarias: "Necessary",
     necesariasTexto: "Store your consent decision. Always active.",
-    preferencias: "Remember language",
-    preferenciasTexto: "Keep your chosen language in this browser.",
+    preferencias: "Save language preference in a cookie",
+    preferenciasTexto:
+      "Your language is stored in this browser to keep the interface consistent; this option controls its cookie.",
     guardado: "Preferences saved.",
     error: "We could not save your decision in this browser.",
   },

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import IconoEvento from "../IconoEvento/IconoEvento";
+import { usePreferencias } from "../../context/PreferenciasContext";
 import type { FiltrosEventos, Evento } from "../../types";
 import "./BuscadorEventos.css";
 export default function BuscadorEventos({
@@ -13,6 +14,7 @@ export default function BuscadorEventos({
   onBuscar: (filtros: FiltrosEventos) => void;
   filtrosAplicados?: FiltrosEventos | null;
 }) {
+  const { textos } = usePreferencias();
   const [consulta, setConsulta] = useState(filtrosAplicados?.consulta ?? "");
   const [ciudad, setCiudad] = useState(
     filtrosAplicados === null ? "Manizales" : (filtrosAplicados?.ciudad ?? ""),
@@ -28,26 +30,26 @@ export default function BuscadorEventos({
       className="buscador-eventos"
       role="search"
       onSubmit={buscar}
-      aria-label={en ? "Find events" : "Buscar eventos"}
+      aria-label={textos.inicio.buscador.aria}
     >
       <label>
         <IconoEvento tipo="buscar" />
         <span>
-          <span>{en ? "What" : "Qué"}</span>
+          <span>{textos.inicio.buscador.que}</span>
           <input
             type="search"
             value={consulta}
             onChange={(e) => setConsulta(e.target.value)}
-            placeholder={en ? "Event or artist" : "Evento o artista"}
+            placeholder={textos.inicio.buscador.eventoArtista}
           />
         </span>
       </label>
       <label>
         <IconoEvento tipo="lugar" />
         <span>
-          <span>{en ? "Where" : "Dónde"}</span>
+          <span>{textos.inicio.buscador.donde}</span>
           <select value={ciudad} onChange={(e) => setCiudad(e.target.value)}>
-            <option value="">{en ? "All cities" : "Todas las ciudades"}</option>
+            <option value="">{textos.inicio.buscador.todasCiudades}</option>
             {["Manizales", "Pereira", "Bogotá", "Medellín", "Armenia"].map(
               (valor) => (
                 <option key={valor}>{valor}</option>
@@ -59,9 +61,9 @@ export default function BuscadorEventos({
       <label>
         <IconoEvento tipo="fecha" />
         <span>
-          <span>{en ? "When" : "Cuándo"}</span>
+          <span>{textos.inicio.buscador.cuando}</span>
           <select value={fecha} onChange={(e) => setFecha(e.target.value)}>
-            <option value="">{en ? "Any date" : "Cualquier fecha"}</option>
+            <option value="">{textos.inicio.buscador.cualquierFecha}</option>
             {eventos.map((evento) => (
               <option key={evento.fecha} value={evento.fecha}>
                 {new Date(`${evento.fecha}T12:00:00`).toLocaleDateString(
@@ -77,7 +79,7 @@ export default function BuscadorEventos({
         </span>
       </label>
       <button className="boton-home primario" type="submit">
-        {en ? "Search" : "Buscar"}
+        {textos.inicio.buscador.buscar}
       </button>
     </form>
   );

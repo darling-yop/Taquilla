@@ -1,11 +1,10 @@
 import IconoEvento from "../IconoEvento/IconoEvento";
-import { categoriasEn } from "../../data/catalogo";
+import { usePreferencias } from "../../context/PreferenciasContext";
 import type { Categoria, FiltrosEventos } from "../../types";
 import "./CategoriasEventos.css";
 export default function CategoriasEventos({
   categorias,
   filtros,
-  en,
   filtrarCategoria,
   cargando,
   error,
@@ -13,22 +12,22 @@ export default function CategoriasEventos({
 }: {
   categorias: Categoria[];
   filtros: FiltrosEventos | null;
-  en: boolean;
   filtrarCategoria: (categoria: Categoria["id"]) => void;
   cargando: boolean;
   error: Error | null;
   onReintentar: () => void;
 }) {
+  const { textos } = usePreferencias();
   return (
     <nav
       className="categorias-eventos"
-      aria-label={en ? "Event categories" : "Categorías de eventos"}
+      aria-label={textos.inicio.buscador.categorias}
       aria-busy={cargando}
     >
       {cargando && (
         <>
           <span className="solo-lectores" role="status">
-            {en ? "Loading event categories" : "Cargando categorías de eventos"}
+            {textos.inicio.buscador.cargarCategorias}
           </span>
           {Array.from({ length: 6 }, (_, index) => (
             <div
@@ -52,22 +51,21 @@ export default function CategoriasEventos({
               <IconoEvento tipo={categoria.id} />
             </span>
             <span>
-              {en ? categoriasEn[categoria.id] : categoria.nombre}
+              {textos.categorias[categoria.id]}
               <small>
-                {categoria.eventos} {en ? "events" : "eventos"}
+                {(categoria.eventos === 1
+                  ? textos.inicio.buscador.evento
+                  : textos.inicio.buscador.eventos
+                ).replace("{cantidad}", String(categoria.eventos))}
               </small>
             </span>
           </button>
         ))}
       {error && (
         <div className="estado-categorias" role="alert">
-          <p>
-            {en
-              ? "We couldn't load event categories."
-              : "No pudimos cargar las categorías de eventos."}
-          </p>
+          <p>{textos.inicio.errorCategorias}</p>
           <button type="button" onClick={onReintentar}>
-            {en ? "Try again" : "Reintentar"}
+            {textos.comun.reintentar}
           </button>
         </div>
       )}

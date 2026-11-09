@@ -21,9 +21,9 @@ import type { Evento } from "../types";
 
 export default function HomePage() {
   const router = useRouter();
-  const { idioma } = usePreferencias();
+  const { idioma, textos } = usePreferencias();
   const en = idioma === "en";
-  const { detalle, setDetalle, abrirCuenta } = useDetalle(idioma);
+  const { detalle, setDetalle, abrirCuenta } = useDetalle(textos);
   const destacadosRecurso = useRecurso(
     "/eventos/destacados",
     adaptarEventoInicio,
@@ -60,29 +60,20 @@ export default function HomePage() {
         <div className="resumen-evento">
           <AficheEvento variante={evento.arte} />
           <p>{dinero(evento.precio)} COP</p>
-          <small>
-            {en
-              ? "Sample event. Tickets are not for sale."
-              : "Evento de ejemplo. No hay venta de entradas."}
-          </small>
+          <small>{textos.inicio.eventoEjemplo}</small>
         </div>
       ),
-      cerrar: en ? "Close" : "Cerrar",
+      cerrar: textos.comun.cerrar,
     });
   }
   return (
     <LayoutPublico
       destino="/explorar"
-      etiqueta={en ? "Explore" : "Explorar"}
-      descripcion={
-        en
-          ? "Concerts, theatre, sports and festivals in one place."
-          : "Conciertos, teatro, deportes y festivales en un solo lugar."
-      }
+      etiqueta={textos.interfaz.explora}
+      descripcion={textos.pie.descripcion}
       onCuenta={abrirCuenta}
     >
       <HeroTaquilla
-        en={en}
         destacado={eventos[0] ?? null}
         cargandoDestacado={destacadosRecurso.cargando}
         errorDestacado={destacadosRecurso.error}
@@ -103,7 +94,6 @@ export default function HomePage() {
         <CategoriasEventos
           categorias={categorias}
           filtros={filtros}
-          en={en}
           filtrarCategoria={filtrarCategoria}
           cargando={categoriasRecurso.cargando}
           error={categoriasRecurso.error}
@@ -111,24 +101,21 @@ export default function HomePage() {
         />
         <SeccionEventos
           id="eventos"
+          en={en}
           titulo={
             filtros
-              ? en
-                ? "Search results"
-                : "Resultados de búsqueda"
-              : en
-                ? "Featured events"
-                : "Eventos destacados"
+              ? textos.inicio.resultadosBusqueda
+              : textos.inicio.destacados
           }
           descripcion={
             filtros
-              ? `${resultados.length} ${en ? "results" : "resultados"}`
-              : en
-                ? "Explore our event selection"
-                : "Explora nuestra selección de eventos"
+              ? textos.inicio.resultados.replace(
+                  "{cantidad}",
+                  String(resultados.length),
+                )
+              : textos.inicio.descripcionDestacados
           }
           eventos={filtros ? resultados : eventos.slice(0, 4)}
-          en={en}
           onAbrir={abrirEvento}
           onVerTodos={() => router.push("/explorar")}
           cargando={destacadosRecurso.cargando}
@@ -138,14 +125,10 @@ export default function HomePage() {
         {!filtros && (
           <SeccionEventos
             id="eventos-ciudad"
-            titulo={en ? "Events in Manizales" : "Eventos en Manizales"}
-            descripcion={
-              en
-                ? "Discover events in your city"
-                : "Descubre los eventos de tu ciudad"
-            }
-            eventos={eventosManizales}
             en={en}
+            titulo={textos.inicio.manizales}
+            descripcion={textos.inicio.descripcionManizales}
+            eventos={eventosManizales}
             onAbrir={abrirEvento}
             onVerTodos={() =>
               router.push("/explorar?ciudad=Manizales&pagina=1")

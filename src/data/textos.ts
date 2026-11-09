@@ -1,0 +1,115 @@
+import type { TextosInterfaz } from "./interfaz";
+import type { CategoriaEvento } from "../types";
+
+export interface TextosAplicacion {
+  interfaz: TextosInterfaz;
+  logoAria: string;
+  idiomas: {
+    es: string;
+    en: string;
+  };
+  categorias: Record<CategoriaEvento, string>;
+  inicio: {
+    tituloSeo: string;
+    descripcionSeo: string;
+    temporada: string;
+    titulo: string;
+    subtitulo: string;
+    populares: string;
+    buscador: {
+      que: string;
+      donde: string;
+      cuando: string;
+      eventoArtista: string;
+      todasCiudades: string;
+      cualquierFecha: string;
+      buscar: string;
+      aria: string;
+      categorias: string;
+      cargarCategorias: string;
+      eventos: string;
+      evento: string;
+      destacado: string;
+      desde: string;
+      verEvento: string;
+    };
+    destacados: string;
+    descripcionDestacados: string;
+    resultadosBusqueda: string;
+    resultados: string;
+    manizales: string;
+    descripcionManizales: string;
+    cargarDestacados: string;
+    errorDestacados: string;
+    sinDestacados: string;
+    errorCategorias: string;
+    eventoEjemplo: string;
+  };
+  explorar: {
+    eyebrow: string;
+    titulo: string;
+    tituloSeo: string;
+    descripcionSeo: string;
+    descripcion: string;
+    filtroAria: string;
+    eventoArtista: string;
+    buscarEventos: string;
+    categoria: string;
+    todasCategorias: string;
+    ciudad: string;
+    todasCiudades: string;
+    fecha: string;
+    orden: string;
+    ordenFecha: string;
+    ordenPrecio: string;
+    ordenPopularidad: string;
+    aplicar: string;
+    limpiar: string;
+    tituloResultados: string;
+    cargando: string;
+    resultadoUno: string;
+    resultados: string;
+    errorOpciones: string;
+    reintentarCategorias: string;
+    reintentarCiudades: string;
+    errorCatalogo: string;
+    sinResultados: string;
+    sinResultadosDescripcion: string;
+    navPaginas: string;
+    anterior: string;
+    siguiente: string;
+    pagina: string;
+    de: string;
+    reintentar: string;
+  };
+  comun: {
+    desde: string;
+    verEvento: string;
+    verTodos: string;
+    cargandoEventos: string;
+    errorEventos: string;
+    reintentar: string;
+    noEncontrados: string;
+    probarOtraBusqueda: string;
+    verTodosEventos: string;
+    cerrar: string;
+    errorTraducciones: string;
+  };
+  pie: {
+    descripcion: string;
+    explorar: string;
+    cuenta: string;
+    inicio: string;
+    eventos: string;
+    ingresar: string;
+    registro: string;
+    derechos: string;
+  };
+  cuenta: {
+    ingresar: string;
+    registro: string;
+    descripcionIngresar: string;
+    descripcionRegistro: string;
+    continuar: string;
+  };
+}

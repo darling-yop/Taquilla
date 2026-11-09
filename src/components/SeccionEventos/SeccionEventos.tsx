@@ -1,5 +1,6 @@
 import Flecha from "../Flecha/Flecha";
 import TarjetaEvento from "../TarjetaEvento/TarjetaEvento";
+import { usePreferencias } from "../../context/PreferenciasContext";
 import type { Evento } from "../../types";
 import "./SeccionEventos.css";
 export default function SeccionEventos({
@@ -25,6 +26,7 @@ export default function SeccionEventos({
   error?: Error | null;
   onReintentar?: () => void;
 }) {
+  const { textos } = usePreferencias();
   return (
     <section
       className="seccion-eventos"
@@ -37,7 +39,7 @@ export default function SeccionEventos({
           <p role="status">{descripcion}</p>
         </div>
         <button className="enlace-home" onClick={onVerTodos}>
-          {en ? "View all" : "Ver todos"}
+          {textos.comun.verTodos}
           <Flecha />
         </button>
       </div>
@@ -45,7 +47,7 @@ export default function SeccionEventos({
         {cargando && (
           <>
             <span className="solo-lectores" role="status">
-              {en ? "Loading events" : "Cargando eventos"}
+              {textos.comun.cargandoEventos}
             </span>
             {Array.from({ length: 4 }, (_, index) => (
               <div
@@ -69,28 +71,24 @@ export default function SeccionEventos({
       </div>
       {error && (
         <div className="estado-eventos" role="alert">
-          <p>
-            {en
-              ? "We couldn't load events. Check your connection and try again."
-              : "No pudimos cargar los eventos. Revisa tu conexión e inténtalo de nuevo."}
-          </p>
+          <p>{textos.comun.errorEventos}</p>
           {onReintentar && (
             <button
               type="button"
               className="boton-home primario"
               onClick={onReintentar}
             >
-              {en ? "Try again" : "Reintentar"}
+              {textos.comun.reintentar}
             </button>
           )}
         </div>
       )}
       {!cargando && !error && !eventos.length && (
         <div className="sin-resultados">
-          <h3>{en ? "No events found" : "No encontramos eventos"}</h3>
-          <p>{en ? "Try another search." : "Prueba con otra búsqueda."}</p>
+          <h3>{textos.comun.noEncontrados}</h3>
+          <p>{textos.comun.probarOtraBusqueda}</p>
           <button className="boton-home primario" onClick={onVerTodos}>
-            {en ? "View all events" : "Ver todos los eventos"}
+            {textos.comun.verTodosEventos}
           </button>
         </div>
       )}

@@ -43,6 +43,8 @@ npm run typecheck
 ## Funcionalidades
 
 - Inicio bilingüe (español e inglés), con selector de idioma.
+- Traducciones de navegación y pantallas obtenidas desde `/textos?idioma=es|en`;
+  el selector guarda la preferencia del idioma entre visitas.
 - Catálogo en `/explorar` con búsqueda por texto y filtros por categoría,
   ciudad y fecha.
 - Ordenamiento por fecha, precio o popularidad, paginación y filtros persistidos
@@ -56,11 +58,15 @@ La página de inicio obtiene eventos destacados, categorías y eventos de
 Manizales desde la API. El catálogo de `/explorar` consulta el listado paginado
 de eventos y opciones de categoría/ciudad; sus parámetros `q`, `categoria`,
 `ciudad`, `fecha`, `orden` y `pagina` se conservan en la URL. Las respuestas se
-adaptan en `src/services/inicio.ts`; las solicitudes HTTP y los estados de
-carga/reintento están en `src/services/api.ts`, `src/services/catalogoEventos.ts`
-y los hooks bajo `src/hooks/`. `src/data/catalogo.ts` contiene utilidades de
-formato y búsqueda. El flujo de compra y el acceso real a cuentas no están
-implementados.
+adaptan en `src/services/inicio.ts`; las traducciones del servicio y sus textos
+alternativos están en `src/services/textos.ts`. El idioma elegido se persiste
+en el almacenamiento local para mantener la interfaz al navegar o recargar;
+la cookie de idioma solo se guarda cuando se aceptan las preferencias
+opcionales. Si falla la API de textos, se muestran textos locales y aparece una
+opción de reintento. Las solicitudes HTTP y los estados de carga/reintento
+están en `src/services/api.ts`, `src/services/catalogoEventos.ts` y los hooks
+bajo `src/hooks/`. `src/data/catalogo.ts` contiene utilidades de formato y
+búsqueda. El flujo de compra y el acceso real a cuentas no están implementados.
 
 ## Estructura
 

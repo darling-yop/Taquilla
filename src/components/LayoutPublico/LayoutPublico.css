@@ -1,3 +1,22 @@
 .landing {
   isolation: isolate;
 }
+.error-traducciones {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 8px 16px;
+  background: #fff4d6;
+  color: #4b3900;
+  font-size: 14px;
+}
+.error-traducciones button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+}

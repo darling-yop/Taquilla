@@ -1,9 +1,9 @@
 import EventoDestacado from "../EventoDestacado/EventoDestacado";
 import type { ReactNode } from "react";
 import type { Evento, FiltrosEventos, CategoriaEvento } from "../../types";
+import { usePreferencias } from "../../context/PreferenciasContext";
 import "./HeroTaquilla.css";
 export default function HeroTaquilla({
-  en,
   children,
   destacado,
   cargandoDestacado,
@@ -13,7 +13,6 @@ export default function HeroTaquilla({
   setFiltros,
   filtrarCategoria,
 }: {
-  en: boolean;
   children: ReactNode;
   destacado: Evento | null;
   cargandoDestacado: boolean;
@@ -23,28 +22,17 @@ export default function HeroTaquilla({
   setFiltros: (filtros: FiltrosEventos | null) => void;
   filtrarCategoria: (categoria: CategoriaEvento) => void;
 }) {
+  const { textos } = usePreferencias();
   return (
     <section className="hero-taquilla">
       <div className="ancho-home interior-taquilla">
         <div>
-          <span className="etiqueta-evento">
-            {en
-              ? "November – December 2026 season"
-              : "Temporada nov – dic 2026"}
-          </span>
-          <h1>
-            {en
-              ? "Your next night starts here"
-              : "Tu próxima noche empieza aquí"}
-          </h1>
-          <p>
-            {en
-              ? "Concerts, theatre, sports and festivals. Search by category, date or city and discover all the details of each event."
-              : "Conciertos, teatro, deportes y festivales. Busca por categoría, fecha o ciudad y consulta todos los detalles de cada evento."}
-          </p>
+          <span className="etiqueta-evento">{textos.inicio.temporada}</span>
+          <h1>{textos.inicio.titulo}</h1>
+          <p>{textos.inicio.subtitulo}</p>
           {children}
           <div className="populares">
-            <span>{en ? "Popular:" : "Populares:"}</span>
+            <span>{textos.inicio.populares}</span>
             {["Salsa", "Stand-up", "Fútbol", "Festivales de fin de año"].map(
               (valor, i) => (
                 <button
@@ -72,7 +60,7 @@ export default function HeroTaquilla({
           </div>
         </div>
         {destacado ? (
-          <EventoDestacado evento={destacado} en={en} onAbrir={abrirEvento} />
+          <EventoDestacado evento={destacado} onAbrir={abrirEvento} />
         ) : (
           <div
             className="destacado-estado"
@@ -80,28 +68,20 @@ export default function HeroTaquilla({
             aria-busy={cargandoDestacado}
           >
             {cargandoDestacado ? (
-              <p>{en ? "Loading featured events…" : "Cargando destacados…"}</p>
+              <p>{textos.inicio.cargarDestacados}</p>
             ) : errorDestacado ? (
               <>
-                <p>
-                  {en
-                    ? "We couldn't load featured events."
-                    : "No pudimos cargar los eventos destacados."}
-                </p>
+                <p>{textos.inicio.errorDestacados}</p>
                 <button
                   type="button"
                   className="boton-home secundario"
                   onClick={onReintentarDestacado}
                 >
-                  {en ? "Try again" : "Reintentar"}
+                  {textos.comun.reintentar}
                 </button>
               </>
             ) : (
-              <p>
-                {en
-                  ? "There are no featured events right now."
-                  : "No hay eventos destacados por ahora."}
-              </p>
+              <p>{textos.inicio.sinDestacados}</p>
             )}
           </div>
         )}

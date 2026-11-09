@@ -1,4 +1,5 @@
 import { useEffect, useRef, useId } from "react";
+import { usePreferencias } from "../../context/PreferenciasContext";
 import type { Detalle } from "../../types";
 import "./DialogoDetalle.css";
 export default function DialogoDetalle({
@@ -8,6 +9,7 @@ export default function DialogoDetalle({
   detalle: Detalle | null;
   onCerrar: () => void;
 }) {
+  const { textos } = usePreferencias();
   const dialogo = useRef<HTMLDialogElement>(null);
   const id = useId();
   useEffect(() => {
@@ -24,7 +26,7 @@ export default function DialogoDetalle({
     >
       <button
         className="cerrar-detalle"
-        aria-label="Cerrar / Close"
+        aria-label={textos.comun.cerrar}
         onClick={() => dialogo.current?.close()}
       >
         ×
@@ -36,7 +38,7 @@ export default function DialogoDetalle({
         className="boton-home primario"
         onClick={() => dialogo.current?.close()}
       >
-        {detalle?.cerrar ?? "Cerrar"}
+        {detalle?.cerrar ?? textos.comun.cerrar}
       </button>
     </dialog>
   );
