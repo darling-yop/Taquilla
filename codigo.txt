@@ -1,0 +1,3194 @@
+﻿=== C:\Users\DARLIN\Taquilla\src\App.css ===
+.sitio{
+    min-height : 100vh;
+    min-height : 100dvh;
+    display : flex;
+    flex-direction : column;
+    
+}
+
+=== C:\Users\DARLIN\Taquilla\src\App.jsx ===
+import { useEffect, useState } from "react";
+import { useTextos } from "./hooks/useTextos.js";
+import { useEventos } from "./hooks/useEventos.js";
+import { cerrarSesion, consultarSesion } from "./services/cuentaService.js";
+import { adaptarInicio } from "./utils/textosInicio.js";
+import "./App.css";
+import Navbar from "./components/Navbar.jsx";
+import Inicio from "./components/Inicio.jsx";
+import Categorias from "./components/Categorias.jsx";
+import SeccionEventos from "./components/SeccionEventos.jsx";
+import Cuenta from "./components/Cuenta.jsx";
+import DetalleEvento from "./components/DetalleEvento.jsx";
+import Footer from "./components/Footer.jsx";
+import Explorar from "./components/Explorar.jsx";
+
+function leerRuta() {
+  const hash = window.location.hash.slice(1);
+  if (!hash) return { tipo: "inicio" };
+
+  const [pagina, query = ""] = hash.split("?", 2);
+  if (pagina.startsWith("evento/")) {
+    return { tipo: "evento", slug: decodeURIComponent(pagina.slice(7)) };
+  }
+  if (pagina.startsWith("categoria/")) {
+    return {
+      tipo: "categoria",
+      categoria: decodeURIComponent(pagina.slice(10)),
+    };
+  }
+  if (pagina === "buscar") {
+    return {
+      tipo: "buscar",
+      filtros: Object.fromEntries(new URLSearchParams(query)),
+    };
+  }
+   if (pagina === "explorar") {
+    return {
+      tipo: "explorar",
+      filtros: Object.fromEntries(new URLSearchParams(query)),
+    };
+  }
+  if (pagina === "ingresar" || pagina === "crearCuenta") {
+    return { tipo: pagina };
+  }
+  return { tipo: "inicio" };
+}
+
+function App() {
+  const [idioma, setIdioma] = useState("es");
+  const [ruta, setRuta] = useState(leerRuta);
+  const [usuario, setUsuario] = useState(null);
+  const [errorSesion, setErrorSesion] = useState(null);
+  const datos = useTextos(idioma);
+  const contenido = useEventos(datos.textos, idioma);
+  const ingles = idioma === "en";
+
+  useEffect(() => {
+    function actualizar() {
+      setRuta(leerRuta());
+    }
+
+    window.addEventListener("hashchange", actualizar);
+    return () => window.removeEventListener("hashchange", actualizar);
+  }, []);
+
+  useEffect(() => {
+    let vigente = true;
+    consultarSesion()
+      .then((sesion) => {
+        if (vigente) setUsuario(sesion);
+      })
+      .catch((errorConsulta) => {
+        if (vigente) {
+          console.error("Error al consultar la sesiÃ³n:", errorConsulta);
+          setErrorSesion(errorConsulta);
+        }
+      });
+
+    return () => {
+      vigente = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (ruta.tipo === "categoria") {
+      contenido.cargarResultados({ categoria: ruta.categoria });
+      } else if (ruta.tipo === "buscar" || ruta.tipo === "explorar") {
+      contenido.cargarResultados(ruta.filtros);
+    } else {
+      contenido.limpiarResultados();
+    }
+  }, [ruta, contenido.cargarResultados, contenido.limpiarResultados]);
+
+  useEffect(() => {
+    document.documentElement.lang = idioma;
+  }, [idioma]);
+
+  function navegar(hash) {
+    const destino = hash.startsWith("#") ? hash : `#${hash}`;
+    if (window.location.hash === destino) {
+      setRuta(leerRuta());
+    } else {
+      window.location.hash = destino;
+    }
+  }
+
+  function buscar(valor) {
+    const filtros = typeof valor === "string" ? { q: valor } : valor;
+    const parametros = new URLSearchParams();
+
+    for (const clave of ["q", "ciudad", "fecha"]) {
+      if (filtros?.[clave]) parametros.set(clave, filtros[clave]);
+    }
+
+    navegar(`buscar?${parametros.toString()}`);
+  }
+    function filtrarExplorar(filtros = {}) {
+    const parametros = new URLSearchParams();
+
+        for (const clave of ["q", "categoria", "ciudad", "fecha", "desde", "hasta", "pagina"]) {
+      if (filtros[clave]) parametros.set(clave, filtros[clave]);
+    }
+
+    const consulta = parametros.toString();
+    navegar(consulta ? `explorar?${consulta}` : "explorar");
+  }
+
+  async function salir() {
+    try {
+      await cerrarSesion();
+      setUsuario(null);
+      setErrorSesion(null);
+    } catch (errorConsulta) {
+      setErrorSesion(errorConsulta);
+    }
+  }
+
+  const catalogoActivo = ["categoria", "buscar"].includes(ruta.tipo);
+  const mostrarInicioPublico = ["inicio", "explorar"].includes(ruta.tipo);
+   const activo =
+    ruta.tipo === "categoria"
+      ? ruta.categoria
+      : catalogoActivo || ruta.tipo === "explorar"
+        ? "explorar"
+        : undefined;
+  const nombreCategoria =
+    contenido.nombresCategoria?.[ruta.categoria] ?? ruta.categoria;
+
+   const tituloResultados =
+    ruta.tipo === "categoria"
+      ? nombreCategoria
+      : (datos.textos?.paginas?.explorar?.encabezado?.titulo ??
+        (ingles ? "Explore events" : "Explorar eventos"));
+
+  const fechaNoDisponible =
+    ruta.tipo === "buscar" && Boolean(ruta.filtros?.fecha);
+
+  return (
+    <div className="sitio">
+      <Navbar
+        {...datos}
+        idioma={idioma}
+        cambiarIdioma={setIdioma}
+        activo={activo}
+        onBuscar={buscar}
+        usuario={usuario}
+        onCerrarSesion={salir}
+      />
+
+      {errorSesion && (
+        <p role="alert" className="estado-busqueda">
+          {ingles
+            ? "There was a problem with your session."
+            : "OcurriÃ³ un problema con la sesiÃ³n."}
+        </p>
+      )}
+
+      {ruta.tipo === "evento" ? (
+        <DetalleEvento slug={ruta.slug} idioma={idioma} />
+      ) : ruta.tipo === "ingresar" || ruta.tipo === "crearCuenta" ? (
+        <Cuenta
+          tipo={ruta.tipo}
+          textos={datos.textos}
+          idioma={idioma}
+          onLogin={setUsuario}
+        />
+            ) : ruta.tipo === "explorar" ? (
+        <Explorar
+          textos={datos.textos}
+          idioma={idioma}
+          filtros={ruta.filtros}
+          categorias={contenido.categorias?.items ?? []}
+          nombresCategoria={contenido.nombresCategoria}
+          etiquetas={contenido.etiquetas}
+          resultados={contenido.resultados}
+          paginacion={contenido.paginacion}
+          cargando={
+            contenido.cargandoResultados || contenido.filtrosResultados === null
+          }
+          error={contenido.errorResultados}
+          onFiltrar={filtrarExplorar}
+          onReintentar={() => contenido.cargarResultados(ruta.filtros)}
+        />
+      ) : (
+        <main id="explorar">
+          {mostrarInicioPublico && (
+            <Inicio
+              textos={adaptarInicio(datos.textos, {
+                idioma,
+                evento: contenido.destacados.eventos[0],
+              })}
+              idioma={idioma}
+              onBuscar={buscar}
+            />
+          )}
+
+          {contenido.cargando && (
+            <p role="status" className="estado-busqueda">
+              {ingles ? "Loading eventsâ€¦" : "Cargando eventosâ€¦"}
+            </p>
+          )}
+
+          {contenido.error && (
+            <div role="alert" className="estado-busqueda">
+              <p>
+                {ingles
+                  ? "Events could not be loaded."
+                  : "No pudimos cargar los eventos."}
+              </p>
+              <button type="button" onClick={contenido.recargar}>
+                {ingles ? "Try again" : "Reintentar"}
+              </button>
+            </div>
+          )}
+
+          {!contenido.cargando && !contenido.error && (
+            <>
+              <Categorias
+                categorias={contenido.categorias}
+                onBuscar={(categoria) =>
+                  navegar(`categoria/${encodeURIComponent(categoria)}`)
+                }
+              />
+
+              {catalogoActivo ? (
+                <>
+                  {contenido.cargandoResultados && (
+                    <p role="status" className="estado-busqueda">
+                      {ingles ? "Searching eventsâ€¦" : "Buscando eventosâ€¦"}
+                    </p>
+                  )}
+                  {contenido.errorResultados && (
+                    <p role="alert" className="estado-busqueda">
+                      {ingles
+                        ? "The event search failed. Try again."
+                        : "No pudimos buscar eventos. IntÃ©ntalo de nuevo."}
+                    </p>
+                  )}
+                  {fechaNoDisponible && (
+                    <p role="note" className="estado-busqueda">
+                      {ingles
+                        ? "The API does not currently support filtering events by date."
+                        : "La API actual no permite filtrar eventos por fecha; se aplicaron los demÃ¡s criterios."}
+                    </p>
+                  )}
+                  {!contenido.cargandoResultados &&
+                    !contenido.errorResultados &&
+                    (contenido.resultados.length > 0 ? (
+                      <SeccionEventos
+                        seccion={{
+                          id: "resultados",
+                          titulo: tituloResultados,
+                          subtitulo: "",
+                          eventos: contenido.resultados,
+                        }}
+                        etiquetas={contenido.etiquetas}
+                        nombresCategoria={contenido.nombresCategoria}
+                        idioma={idioma}
+                        onVerTodos={() => navegar("#explorar")}
+                      />
+                    ) : (
+                      <p role="status" className="estado-busqueda">
+                        {ingles
+                          ? "No events match these filters."
+                          : "No hay eventos que coincidan con estos filtros."}
+                      </p>
+                    ))}
+                  {contenido.paginacion?.paginas > 1 && (
+                    <nav
+                      className="paginacion-eventos"
+                      aria-label={ingles ? "Event pages" : "PÃ¡ginas de eventos"}
+                    >
+                      <button
+                        type="button"
+                        disabled={contenido.paginacion.pagina <= 1}
+                        onClick={() =>
+                          contenido.cambiarPagina(
+                            contenido.paginacion.pagina - 1,
+                          )
+                        }
+                      >
+                        {ingles ? "Previous" : "Anterior"}
+                      </button>
+                      <span>
+                        {contenido.paginacion.pagina} /{" "}
+                        {contenido.paginacion.paginas}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={
+                          contenido.paginacion.pagina >=
+                          contenido.paginacion.paginas
+                        }
+                        onClick={() =>
+                          contenido.cambiarPagina(
+                            contenido.paginacion.pagina + 1,
+                          )
+                        }
+                      >
+                        {ingles ? "Next" : "Siguiente"}
+                      </button>
+                    </nav>
+                  )}
+                </>
+              ) : (
+                <>
+                  {contenido.destacados.eventos.length > 0 && (
+                    <SeccionEventos
+                      seccion={contenido.destacados}
+                      etiquetas={contenido.etiquetas}
+                      nombresCategoria={contenido.nombresCategoria}
+                      idioma={idioma}
+                      onVerTodos={() => navegar("#explorar")}
+                    />
+                  )}
+                  {contenido.proximos.eventos.length > 0 && (
+                    <SeccionEventos
+                      seccion={contenido.proximos}
+                      etiquetas={contenido.etiquetas}
+                      nombresCategoria={contenido.nombresCategoria}
+                      idioma={idioma}
+                      onVerTodos={() => navegar("#explorar")}
+                    />
+                  )}
+                </>
+              )}
+            </>
+          )}
+          </main>
+    )}
+    <Footer textos={datos.textos} idioma={idioma} />
+  </div>
+);
+}
+
+export default App;
+
+
+=== C:\Users\DARLIN\Taquilla\src\main.jsx ===
+import "./styles/tokens.css";
+import "./styles/base.css";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import Home from "./pages/Home.jsx";
+import { PreferenciasProvider } from "./context/PreferenciasContext.jsx";
+
+createRoot(document.getElementById("root")).render(
+  <StrictMode>
+    <PreferenciasProvider>
+      <Home />
+    </PreferenciasProvider>
+  </StrictMode>,
+);
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\AficheEvento\AficheEvento.css ===
+.arte-evento {
+  position: relative;
+  height: 176px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #a49086, #554650);
+}
+.arte-evento::before,
+.arte-evento::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+}
+.arte-evento::before {
+  width: 70%;
+  aspect-ratio: 1;
+  right: -20%;
+  top: -45%;
+  background: rgb(255 255 255 / 12%);
+}
+.arte-evento::after {
+  width: 50%;
+  aspect-ratio: 1;
+  bottom: -60%;
+  left: -18%;
+  background: rgb(0 0 0 / 12%);
+}
+.arte-evento-1 {
+  background: linear-gradient(135deg, #6c8cae, #19191f 90%);
+}
+.arte-evento-2 {
+  background: linear-gradient(135deg, #b6ac81, #b5827c);
+}
+.arte-evento-3 {
+  background: linear-gradient(135deg, #51856e, #203438 90%);
+}
+.arte-evento-4 {
+  background: linear-gradient(135deg, #a69ac4, #ba8779);
+}
+.arte-evento-5 {
+  background: linear-gradient(135deg, #222126, #a29ac8);
+}
+.arte-evento-6 {
+  background: linear-gradient(135deg, #ba829a, #b8b084);
+}
+.arte-evento-7 {
+  background: linear-gradient(135deg, #21383c, #8cabe0);
+}
+@media (max-width: 640px) {
+  .tarjeta-evento .arte-evento {
+    height: 190px;
+  }
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\AficheEvento\AficheEvento.jsx ===
+import "./AficheEvento.css";
+export default function AficheEvento({ variante = 0, className = "" }) {
+  return (
+    <div
+      className={`arte-evento arte-evento-${variante} ${className}`}
+      aria-hidden="true"
+    />
+  );
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\BannerCookies\BannerCookies.css ===
+.banner-cookies {
+  position: fixed;
+  z-index: 20;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  max-width: 760px;
+  margin-inline: auto;
+  padding: 24px;
+  border: 2px solid var(--tinta);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  color: var(--tinta);
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+}
+.banner-cookies h2 {
+  font-size: 20px;
+}
+.banner-cookies p {
+  margin-block: 12px 16px;
+}
+@media (max-width: 640px) {
+  .banner-cookies {
+    padding: 16px;
+  }
+  .banner-cookies .grupo-botones {
+    gap: 8px;
+  }
+  .banner-cookies .boton-home {
+    padding: 10px 14px;
+  }
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\BannerCookies\BannerCookies.jsx ===
+import "./BannerCookies.css";
+export default function BannerCookies({
+  textos,
+  onAceptar,
+  onRechazar,
+  onConfigurar,
+}) {
+  return (
+    <aside className="banner-cookies" aria-label={textos.banner}>
+      <h2>{textos.banner}</h2>
+      <p>{textos.descripcion}</p>
+      <div className="grupo-botones">
+        <button className="boton-home primario" onClick={onAceptar}>
+          {textos.aceptar}
+        </button>
+        <button className="boton-home secundario" onClick={onRechazar}>
+          {textos.rechazar}
+        </button>
+        <button className="enlace-home" onClick={onConfigurar}>
+          {textos.configurar}
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\BuscadorEventos\BuscadorEventos.css ===
+.buscador-eventos {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  color: #141414;
+  padding: 8px;
+  border-radius: 12px;
+}
+.buscador-eventos label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  padding: 4px 10px;
+}
+.buscador-eventos label + label {
+  border-left: 1px solid #e5e5e5;
+}
+.buscador-eventos label > svg {
+  flex-shrink: 0;
+  color: #595959;
+}
+.buscador-eventos label > span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+}
+.buscador-eventos label > span > span {
+  font-size: 12px;
+  color: #595959;
+}
+.buscador-eventos input,
+.buscador-eventos select {
+  border: 0;
+  padding: 2px 0;
+  width: 100%;
+  min-width: 0;
+  background: #fff;
+  color: #141414;
+  font-size: 14px;
+}
+.buscador-eventos input::placeholder {
+  color: #595959;
+  opacity: 1;
+}
+.buscador-eventos .boton-home {
+  min-height: 52px;
+  padding-inline: 22px;
+}
+@media (max-width: 1100px) {
+  .buscador-eventos {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 1100px) {
+  .buscador-eventos label:first-child {
+    flex-basis: 100%;
+  }
+}
+@media (max-width: 1100px) {
+  .buscador-eventos label:nth-child(2) {
+    border-left: 0;
+  }
+}
+@media (max-width: 640px) {
+  .buscador-eventos {
+    padding: 12px;
+    gap: 12px;
+  }
+}
+@media (max-width: 640px) {
+  .buscador-eventos label {
+    flex-basis: 100%;
+    border: 0 !important;
+    border-bottom: 1px solid #e5e5e5 !important;
+    padding: 8px 0;
+  }
+}
+@media (max-width: 640px) {
+  .buscador-eventos input,
+  .buscador-eventos select {
+    font-size: 16px;
+  }
+}
+@media (max-width: 640px) {
+  .buscador-eventos .boton-home {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\BuscadorEventos\BuscadorEventos.jsx ===
+import { useEffect, useState } from "react";
+import IconoEvento from "../IconoEvento/IconoEvento.jsx";
+import "./BuscadorEventos.css";
+export default function BuscadorEventos({
+  en,
+  eventos,
+  onBuscar,
+  filtrosAplicados = null,
+}) {
+  const [consulta, setConsulta] = useState("");
+  const [ciudad, setCiudad] = useState("Manizales");
+  const [fecha, setFecha] = useState("");
+  useEffect(() => {
+    setConsulta(filtrosAplicados?.consulta ?? "");
+    setCiudad(
+      filtrosAplicados === null
+        ? "Manizales"
+        : (filtrosAplicados?.ciudad ?? ""),
+    );
+    setFecha(filtrosAplicados?.fecha ?? "");
+  }, [filtrosAplicados]);
+  function buscar(evento) {
+    evento.preventDefault();
+    onBuscar({ consulta, ciudad, fecha });
+  }
+  return (
+    <form
+      id="buscador-eventos"
+      className="buscador-eventos"
+      role="search"
+      onSubmit={buscar}
+      aria-label={en ? "Find events" : "Buscar eventos"}
+    >
+      <label>
+        <IconoEvento tipo="buscar" />
+        <span>
+          <span>{en ? "What" : "QuÃ©"}</span>
+          <input
+            type="search"
+            value={consulta}
+            onChange={(e) => setConsulta(e.target.value)}
+            placeholder={en ? "Event or artist" : "Evento o artista"}
+          />
+        </span>
+      </label>
+      <label>
+        <IconoEvento tipo="lugar" />
+        <span>
+          <span>{en ? "Where" : "DÃ³nde"}</span>
+          <select value={ciudad} onChange={(e) => setCiudad(e.target.value)}>
+            <option value="">{en ? "All cities" : "Todas las ciudades"}</option>
+            {["Manizales", "Pereira", "BogotÃ¡", "MedellÃ­n", "Armenia"].map(
+              (valor) => (
+                <option key={valor}>{valor}</option>
+              ),
+            )}
+          </select>
+        </span>
+      </label>
+      <label>
+        <IconoEvento tipo="fecha" />
+        <span>
+          <span>{en ? "When" : "CuÃ¡ndo"}</span>
+          <select value={fecha} onChange={(e) => setFecha(e.target.value)}>
+            <option value="">{en ? "Any date" : "Cualquier fecha"}</option>
+            {eventos.map((evento) => (
+              <option key={evento.fecha} value={evento.fecha}>
+                {new Date(`${evento.fecha}T12:00:00`).toLocaleDateString(
+                  en ? "en" : "es-CO",
+                  {
+                    day: "numeric",
+                    month: "short",
+                  },
+                )}
+              </option>
+            ))}
+          </select>
+        </span>
+      </label>
+      <button className="boton-home primario" type="submit">
+        {en ? "Search" : "Buscar"}
+      </button>
+    </form>
+  );
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\CategoriasEventos\CategoriasEventos.css ===
+.categorias-eventos {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px;
+  padding: 48px 0 56px;
+}
+.categorias-eventos button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #dedede;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fff;
+  color: #141414;
+  text-align: left;
+}
+.categorias-eventos button[aria-pressed="true"],
+.categorias-eventos button:hover {
+  border-color: #141414;
+  background: #ededed;
+}
+.icono-categoria {
+  display: grid;
+  place-items: center;
+  background: #f0f0f0;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.categorias-eventos small {
+  display: block;
+  font-size: 12px;
+  color: #595959;
+}
+@media (max-width: 1100px) {
+  .categorias-eventos {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .categorias-eventos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    padding-block: 28px;
+  }
+}
+@media (max-width: 640px) {
+  .categorias-eventos button {
+    padding: 10px;
+    gap: 8px;
+    font-size: 14px;
+  }
+}
+@media (max-width: 640px) {
+  .icono-categoria {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\CategoriasEventos\CategoriasEventos.jsx ===
+import IconoEvento from "../IconoEvento/IconoEvento.jsx";
+import "./CategoriasEventos.css";
+export default function CategoriasEventos({
+  categorias,
+  categoriasEn,
+  cantidades,
+  filtros,
+  en,
+  filtrarCategoria,
+}) {
+  return (
+    <nav
+      className="categorias-eventos"
+      aria-label={en ? "Event categories" : "CategorÃ­as de eventos"}
+    >
+      {categorias.map((categoria, i) => (
+        <button
+          key={categoria}
+          aria-pressed={filtros?.categoria === categoria}
+          onClick={() => filtrarCategoria(categoria)}
+        >
+          <span className="icono-categoria">
+            <IconoEvento tipo={categoria} />
+          </span>
+          <span>
+            {en ? categoriasEn[i] : categoria}
+            <small>
+              {cantidades[i]} {en ? "events" : "eventos"}
+            </small>
+          </span>
+        </button>
+      ))}
+    </nav>
+  );
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\DialogoDetalle\DialogoDetalle.css ===
+.detalle-home {
+  width: min(480px, calc(100% - 32px));
+  max-height: calc(100dvh - 40px);
+  padding: 36px;
+  border: 1px solid var(--borde);
+  border-radius: 16px;
+  background: var(--superficie);
+  color: var(--tinta);
+}
+.detalle-home::backdrop {
+  background: rgb(0 0 0 / 65%);
+}
+.detalle-home h2 {
+  padding-right: 28px;
+  font-size: 28px;
+}
+.detalle-home p {
+  margin: 16px 0 24px;
+  color: var(--suave);
+}
+.detalle-home > svg {
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  border-radius: 12px;
+  margin: 0 auto 24px;
+}
+.cerrar-detalle {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: none;
+  color: var(--tinta);
+  font-size: 28px !important;
+}
+body:has(.detalle-home[open]) {
+  overflow: hidden;
+}
+@media (max-width: 640px) {
+  .detalle-home {
+    padding: 28px;
+  }
+}
+.resumen-evento .arte-evento {
+  border-radius: 10px;
+}
+.resumen-evento small {
+  display: block;
+  margin-bottom: 24px;
+  color: #595959;
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\DialogoDetalle\DialogoDetalle.jsx ===
+import { useEffect, useRef, useId } from "react";
+import "./DialogoDetalle.css";
+export default function DialogoDetalle({ detalle, onCerrar }) {
+  const dialogo = useRef(null);
+  const id = useId();
+  useEffect(() => {
+    if (detalle && !dialogo.current.open) dialogo.current.showModal();
+    if (!detalle && dialogo.current.open) dialogo.current.close();
+  }, [detalle]);
+  return (
+    <dialog
+      className="detalle-home"
+      ref={dialogo}
+      onClose={onCerrar}
+      aria-labelledby={id}
+    >
+      <button
+        className="cerrar-detalle"
+        aria-label="Cerrar / Close"
+        onClick={() => dialogo.current.close()}
+      >
+        Ã—
+      </button>
+      <h2 id={id}>{detalle?.titulo}</h2>
+      <p>{detalle?.descripcion}</p>
+      {detalle?.contenido}
+      <button
+        className="boton-home primario"
+        onClick={() => dialogo.current.close()}
+      >
+        {detalle?.cerrar ?? "Cerrar"}
+      </button>
+    </dialog>
+  );
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\EventoDestacado\EventoDestacado.css ===
+.destacado-taquilla {
+  position: relative;
+  min-height: 440px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.destacado-taquilla > .arte-evento {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+}
+.destacado-taquilla .arte-evento::before {
+  top: -15%;
+}
+.destacado-taquilla .arte-evento::after {
+  bottom: -25%;
+}
+.ficha-destacado {
+  position: absolute;
+  bottom: 26px;
+  left: 20px;
+  right: 20px;
+  background: #fff;
+  color: #141414;
+  padding: 20px;
+  border-radius: 12px;
+}
+.ficha-destacado h2 {
+  font-size: 24px;
+  margin: 12px 0;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+.ficha-destacado > p {
+  color: #595959;
+  font-size: 14px;
+}
+.ficha-destacado > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.ficha-destacado strong {
+  font-weight: 500;
+}
+@media (max-width: 640px) {
+  .destacado-taquilla {
+    display: none;
+  }
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\EventoDestacado\EventoDestacado.jsx ===
+import AficheEvento from "../AficheEvento/AficheEvento.jsx";
+import { dinero } from "../../data/catalogo.js";
+import "./EventoDestacado.css";
+export default function EventoDestacado({ evento, en, onAbrir }) {
+  return (
+    <div className="destacado-taquilla">
+      <AficheEvento variante={evento.arte} />
+      <div className="ficha-destacado">
+        <span className="etiqueta-evento">{en ? "Featured" : "Destacado"}</span>
+        <h2>{evento.nombre}</h2>
+        <p>
+          {evento.horario} Â· {evento.lugar}
+        </p>
+        <div>
+          <strong>
+            {en ? "From" : "Desde"} {dinero(evento.precio)}
+          </strong>
+          <button
+            className="boton-home primario"
+            onClick={() => onAbrir(evento)}
+          >
+            {en ? "View event" : "Ver evento"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\Flecha\Flecha.css ===
+.icono-flecha {
+  flex-shrink: 0;
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\Flecha\Flecha.jsx ===
+import "./Flecha.css";
+export default function Flecha() {
+  return (
+    <svg
+      className="icono-flecha"
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      aria-hidden="true"
+    >
+      <path d="M4 12h15m-6-6 6 6-6 6" />
+    </svg>
+  );
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\Footer\Footer.css ===
+.pie-home {
+  background: var(--superficie);
+  padding: 48px 0 24px;
+}
+.columnas-pie {
+  display: grid;
+  grid-template-columns: 2.6fr 1fr 1fr 1fr;
+  gap: 48px;
+}
+.columnas-pie p {
+  max-width: 300px;
+  color: var(--suave);
+  margin-top: 12px;
+  font-size: 14px;
+}
+.columnas-pie h3 {
+  color: var(--suave);
+  font:
+    400 13px "DM Sans",
+    sans-serif;
+  margin-bottom: 12px;
+}
+.columnas-pie > div > a:not(.marca-home),
+.columnas-pie button {
+  display: block;
+  margin-block: 8px;
+  font-size: 13px;
+}
+.columnas-pie button {
+  color: var(--tinta);
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+}
+.columnas-pie button:hover,
+.columnas-pie > div > a:not(.marca-home):hover {
+  text-decoration: underline;
+}
+.pie-creditos {
+  border-top: 1px solid var(--borde);
+  margin-top: 32px;
+  padding-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--suave);
+  font-size: 12px;
+}
+.pie-creditos .cookies > .cookies-boton {
+  background: transparent;
+  color: var(--suave);
+  border: 0;
+  font-size: 12px;
+  padding: 8px 0;
+}
+
+@media (max-width: 900px) {
+  .columnas-pie {
+    gap: 24px;
+    grid-template-columns: 2fr 1fr 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .columnas-pie > div:last-child {
+    grid-column: 2 / 4;
+  }
+}
+@media (max-width: 640px) {
+  .columnas-pie {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 640px) {
+  .columnas-pie > div:first-child {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 640px) {
+  .columnas-pie > div:last-child {
+    grid-column: auto;
+  }
+}
+@media (max-width: 640px) {
+  .pie-creditos {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+.taquilla .pie-home {
+  --superficie: #141414;
+  --tinta: #fff;
+  --suave: #b3b3b3;
+  --borde: #3c3c3c;
+  color: var(--tinta);
+}
+.taquilla .pie-home .emblema {
+  background: #fff;
+  color: #141414;
+}
+.taquilla .pie-home a:focus-visible,
+.taquilla .pie-home button:focus-visible {
+  outline-color: #fff;
+}
+
+.columnas-pie {
+  grid-template-columns: 2fr 1fr 1fr;
+}
+@media (max-width: 640px) {
+  .columnas-pie {
+    grid-template-columns: 1fr 1fr;
+  }
+  .columnas-pie > div:first-child {
+    grid-column: 1 / -1;
+  }
+  .columnas-pie > div:last-child {
+    grid-column: auto;
+  }
+}
+
+.landing .columnas-pie {
+  grid-template-columns: 2fr 1fr 1fr;
+}
+@media (max-width: 640px) {
+  .landing .columnas-pie {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.pie-creditos .enlace-home {
+  color: var(--suave) !important;
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\Footer\Footer.jsx ===
+import Marca from "../Marca/Marca.jsx";
+import { interfaz } from "../../data/interfaz.js";
+import "./Footer.css";
+export default function Footer({
+  nombre,
+  tipo,
+  descripcion,
+  destino,
+  etiqueta,
+  onCuenta,
+  idioma,
+  onAbrirCookies,
+}) {
+  const t = interfaz[idioma];
+  return (
+    <footer className="pie-home">
+      <div className="ancho-home">
+        <div className="columnas-pie">
+          <div>
+            <Marca nombre={nombre} tipo={tipo} />
+            <p>{descripcion}</p>
+          </div>
+          <div>
+            <h3>{t.explora}</h3>
+            <a href="#contenido">{t.inicio}</a>
+            <a href={destino}>{etiqueta}</a>
+          </div>
+          <div>
+            <h3>{t.cuenta}</h3>
+            <button onClick={() => onCuenta("ingresar")}>{t.ingresar}</button>
+            <button onClick={() => onCuenta("registro")}>{t.registro}</button>
+          </div>
+        </div>
+        <div className="pie-creditos">
+          <span>
+            Â© 2026 {nombre} Â· {t.academico}
+          </span>
+          <button className="enlace-home" onClick={onAbrirCookies}>
+            {t.cookies}
+          </button>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\GestorCookies\GestorCookies.css ===
+.error-cookies {
+  position: fixed;
+  z-index: 25;
+  bottom: 0;
+  background: var(--superficie);
+  color: var(--tinta);
+  padding: 12px;
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\GestorCookies\GestorCookies.jsx ===
+import { useState } from "react";
+import { usePreferencias } from "../../context/PreferenciasContext.jsx";
+import { interfaz } from "../../data/interfaz.js";
+import BannerCookies from "../BannerCookies/BannerCookies.jsx";
+import PreferenciasCookies from "../PreferenciasCookies/PreferenciasCookies.jsx";
+import "./GestorCookies.css";
+export default function GestorCookies({ abierto, onAbrir, onCerrar }) {
+  const { idioma, consentimiento, guardarConsentimiento, error } =
+    usePreferencias();
+  const [mensaje, setMensaje] = useState(false);
+  const t = interfaz[idioma];
+  function guardar(permitir) {
+    if (guardarConsentimiento(permitir)) {
+      setMensaje(true);
+      onCerrar();
+    }
+  }
+  return (
+    <>
+      {!consentimiento && (
+        <BannerCookies
+          textos={t}
+          onAceptar={() => guardar(true)}
+          onRechazar={() => guardar(false)}
+          onConfigurar={onAbrir}
+        />
+      )}
+      {error && !abierto && (
+        <p className="error-cookies" role="alert">
+          {t.error}
+        </p>
+      )}
+      <PreferenciasCookies
+        abierto={abierto}
+        textos={t}
+        permitir={consentimiento === "aceptado"}
+        onGuardar={guardar}
+        onCerrar={onCerrar}
+        error={error}
+      />
+      <span className="solo-lectores" role="status">
+        {mensaje ? t.guardado : ""}
+      </span>
+    </>
+  );
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\HeroTaquilla\HeroTaquilla.css ===
+.hero-taquilla {
+  color: #fff;
+  background: #141414;
+  padding: 72px 0;
+}
+.interior-taquilla {
+  display: grid;
+  grid-template-columns: 1.53fr 1fr;
+  gap: 64px;
+  align-items: center;
+}
+.hero-taquilla h1 {
+  font-size: clamp(36px, 3.5vw, 52px);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  margin: 26px 0;
+  text-wrap: initial;
+}
+.hero-taquilla .interior-taquilla > div > p {
+  color: #b3b3b3;
+  font-size: 18px;
+  line-height: 1.6;
+  margin-bottom: 26px;
+}
+.populares {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  font-size: 13px;
+}
+.populares > span {
+  color: #b3b3b3;
+}
+.populares button {
+  border: 0;
+  color: #fff;
+  background: none;
+  padding: 4px 0;
+  font-size: 13px;
+}
+.populares button:hover {
+  text-decoration: underline;
+}
+.taquilla .hero-taquilla a:focus-visible,
+.taquilla .hero-taquilla button:focus-visible {
+  outline-color: #9191ff;
+}
+@media (max-width: 1100px) {
+  .interior-taquilla {
+    gap: 32px;
+    grid-template-columns: 1.35fr 1fr;
+  }
+}
+@media (max-width: 640px) {
+  .hero-taquilla {
+    padding: 32px 0;
+  }
+}
+@media (max-width: 640px) {
+  .interior-taquilla {
+    display: block;
+  }
+}
+@media (max-width: 640px) {
+  .hero-taquilla h1 {
+    font-size: 34px;
+    margin-block: 20px;
+  }
+}
+@media (max-width: 640px) {
+  .hero-taquilla .interior-taquilla > div > p {
+    font-size: 14px;
+  }
+}
+@media (max-width: 640px) {
+  .populares {
+    gap: 12px;
+  }
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\HeroTaquilla\HeroTaquilla.jsx ===
+import EventoDestacado from "../EventoDestacado/EventoDestacado.jsx";
+import "./HeroTaquilla.css";
+export default function HeroTaquilla({
+  en,
+  children,
+  destacado,
+  abrirEvento,
+  setFiltros,
+  filtrarCategoria,
+}) {
+  return (
+    <section className="hero-taquilla">
+      <div className="ancho-home interior-taquilla">
+        <div>
+          <span className="etiqueta-evento">
+            {en
+              ? "November â€“ December 2026 season"
+              : "Temporada nov â€“ dic 2026"}
+          </span>
+          <h1>
+            {en
+              ? "Your next night starts here"
+              : "Tu prÃ³xima noche empieza aquÃ­"}
+          </h1>
+          <p>
+            {en
+              ? "Concerts, theatre, sports and festivals. Search by category, date or city and discover all the details of each event."
+              : "Conciertos, teatro, deportes y festivales. Busca por categorÃ­a, fecha o ciudad y consulta todos los detalles de cada evento."}
+          </p>
+          {children}
+          <div className="populares">
+            <span>{en ? "Popular:" : "Populares:"}</span>
+            {["Salsa", "Stand-up", "FÃºtbol", "Festivales de fin de aÃ±o"].map(
+              (valor, i) => (
+                <button
+                  key={valor}
+                  onClick={() =>
+                    i === 0
+                      ? (setFiltros({ consulta: "Salsa" }),
+                        document.getElementById("eventos").scrollIntoView())
+                      : filtrarCategoria(
+                          ["Conciertos", "Comedia", "Deportes", "Festivales"][
+                            i
+                          ],
+                        )
+                  }
+                >
+                  {valor}
+                </button>
+              ),
+            )}
+          </div>
+        </div>
+        <EventoDestacado evento={destacado} en={en} onAbrir={abrirEvento} />
+      </div>
+    </section>
+  );
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\IconoEvento\IconoEvento.css ===
+.contenido-evento svg {
+  flex-shrink: 0;
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\IconoEvento\IconoEvento.jsx ===
+import "./IconoEvento.css";
+export default function IconoEvento({ tipo }) {
+  const trazos = {
+    buscar: "M15 15l6 6M10 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14",
+    lugar:
+      "M12 22S4 14 4 9a8 8 0 1 1 16 0c0 5-8 13-8 13ZM12 6a3 3 0 1 0 0 6 3 3 0 0 0 0-6",
+    fecha: "M5 5h14a2 2 0 0 1 2 2v13H3V7a2 2 0 0 1 2-2ZM3 10h18M7 2v6m10-6v6",
+    Conciertos:
+      "M9 18V5l11-2v13M9 8l11-2M9 18c0 4-7 4-7 0s7-4 7 0Zm11-2c0 4-7 4-7 0s7-4 7 0Z",
+    Teatro: "m12 2 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1Z",
+    Deportes:
+      "M7 3h10v7a5 5 0 0 1-10 0V3ZM7 5H3v4a4 4 0 0 0 5 4m9-8h4v4a4 4 0 0 1-5 4m-4 2v5m-5 1h10",
+    Festivales: "M5 22V3c5-4 9 4 14 0v10c-5 4-9-4-14 0",
+    Comedia:
+      "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20ZM8 9h.1m7.9 0h.1M7 14c3 5 7 5 10 0",
+    Familiares:
+      "M9 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM2 21v-4a7 7 0 0 1 14 0v4m1-18a3 3 0 0 1 0 6m2 5a5 5 0 0 1 3 5v2",
+  };
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="20"
+      height="20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d={trazos[tipo] || trazos.fecha} />
+    </svg>
+  );
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\LayoutPublico\LayoutPublico.css ===
+.landing {
+  isolation: isolate;
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\LayoutPublico\LayoutPublico.jsx ===
+import { useRef, useState } from "react";
+import { proyecto } from "../../config/proyecto.js";
+import { usePreferencias } from "../../context/PreferenciasContext.jsx";
+import { interfaz } from "../../data/interfaz.js";
+import Navbar from "../Navbar/Navbar.jsx";
+import Footer from "../Footer/Footer.jsx";
+import SaltarContenido from "../SaltarContenido/SaltarContenido.jsx";
+import GestorCookies from "../GestorCookies/GestorCookies.jsx";
+import "./LayoutPublico.css";
+export default function LayoutPublico({
+  destino,
+  etiqueta,
+  descripcion,
+  onCuenta,
+  children,
+}) {
+  const { idioma, cambiarIdioma } = usePreferencias();
+  const [cookiesAbiertas, setCookiesAbiertas] = useState(false);
+  const disparador = useRef(null);
+  function abrirCookies() {
+    disparador.current = document.activeElement;
+    setCookiesAbiertas(true);
+  }
+  function cerrarCookies() {
+    setCookiesAbiertas(false);
+    disparador.current?.focus();
+  }
+  return (
+    <div className={`landing ${proyecto.id}`}>
+      <SaltarContenido texto={interfaz[idioma].saltar} />
+      <Navbar
+        nombre={proyecto.nombre}
+        tipo={proyecto.id}
+        idioma={idioma}
+        onCambiarIdioma={cambiarIdioma}
+        destino={destino}
+        etiqueta={etiqueta}
+        onCuenta={onCuenta}
+      />
+      <main id="contenido" tabIndex={-1}>
+        {children}
+      </main>
+      <Footer
+        nombre={proyecto.nombre}
+        tipo={proyecto.id}
+        idioma={idioma}
+        descripcion={descripcion}
+        destino={destino}
+        etiqueta={etiqueta}
+        onCuenta={onCuenta}
+        onAbrirCookies={abrirCookies}
+      />
+      <GestorCookies
+        abierto={cookiesAbiertas}
+        onAbrir={abrirCookies}
+        onCerrar={cerrarCookies}
+      />
+    </div>
+  );
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\Marca\Marca.css ===
+.marca-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  font-family: "Syne", sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+}
+.emblema {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  background: var(--acento);
+  color: var(--sobre-acento);
+  border-radius: 50%;
+}
+.emblema svg {
+  width: 32px;
+  height: 32px;
+}
+@media (max-width: 640px) {
+  .marca-home {
+    font-size: 20px;
+  }
+}
+.taquilla .marca-home {
+  font-family: "Instrument Sans", sans-serif;
+}
+.taquilla .emblema {
+  border-radius: 9px;
+  width: 32px;
+  height: 32px;
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\Marca\Marca.jsx ===
+import "./Marca.css";
+export default function Marca({ nombre, tipo }) {
+  return (
+    <a className="marca-home" href="/" aria-label={`${nombre}, inicio`}>
+      <span className={`emblema emblema-${tipo}`} aria-hidden="true">
+        {tipo === "sintonia" ? (
+          <svg viewBox="0 0 32 32">
+            <path
+              d="M8 13v7m5-12v17m6-14v11m5-8v5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+          </svg>
+        ) : tipo === "cromoverso" ? (
+          <svg viewBox="0 0 24 24">
+            <path
+              d="m12 2 3 6 7 1-5 5 1 8-6-4-6 4 1-8-5-5 7-1Z"
+              fill="currentColor"
+            />
+          </svg>
+        ) : (
+          <svg
+            viewBox="0 0 32 32"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+          >
+            <path d="M6 9h20v5a2 2 0 0 0 0 4v5H6v-5a2 2 0 0 0 0-4V9Z" />
+            <path d="M20 10v3m0 2v3m0 2v2" />
+          </svg>
+        )}
+      </span>
+      {nombre}
+    </a>
+  );
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\MenuMovil\MenuMovil.css ===
+.boton-menu {
+  display: none;
+}
+@media (max-width: 640px) {
+  .boton-menu {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    background: none;
+    color: var(--tinta);
+    border: 1px solid var(--borde);
+    border-radius: 50%;
+  }
+}
+
+@media (max-width: 640px) {
+  .boton-menu {
+    flex-shrink: 0;
+  }
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\MenuMovil\MenuMovil.jsx ===
+import "./MenuMovil.css";
+export default function MenuMovil({
+  abierto,
+  onAlternar,
+  menuId,
+  botonRef,
+  textos,
+}) {
+  return (
+    <button
+      type="button"
+      ref={botonRef}
+      className="boton-menu"
+      aria-label={abierto ? textos.cerrarMenu : textos.abrirMenu}
+      aria-expanded={abierto}
+      aria-controls={menuId}
+      onClick={onAlternar}
+    >
+      <svg
+        viewBox="0 0 24 24"
+        width="24"
+        height="24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        aria-hidden="true"
+      >
+        <path
+          d={abierto ? "m6 6 12 12M6 18 18 6" : "M4 6h16M4 12h16M4 18h16"}
+        />
+      </svg>
+    </button>
+  );
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\Navbar\Navbar.css ===
+.cabecera-home {
+  min-height: 72px;
+}
+.fila-cabecera {
+  display: flex;
+  align-items: center;
+  min-height: 72px;
+  gap: 40px;
+}
+.menu-home {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 28px;
+  font-size: 14px;
+}
+.menu-home > a {
+  color: var(--suave);
+}
+.menu-home > a:hover {
+  color: var(--tinta);
+}
+.acciones-home {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  margin-left: auto;
+}
+.ingresar-home {
+  padding: 10px 0;
+  background: transparent;
+  border: 0;
+  color: var(--tinta);
+}
+.ingreso-movil {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .fila-cabecera {
+    gap: 24px;
+  }
+}
+
+@media (max-width: 900px) {
+  .acciones-home {
+    gap: 16px;
+  }
+}
+@media (max-width: 640px) {
+  .fila-cabecera {
+    min-height: 68px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0;
+  }
+}
+@media (max-width: 640px) {
+  .menu-home {
+    display: none;
+    flex-basis: 100%;
+    padding: 24px 0;
+  }
+}
+@media (max-width: 640px) {
+  .menu-home.abierto {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+}
+@media (max-width: 640px) {
+  .menu-home > a {
+    padding: 8px 0;
+  }
+}
+@media (max-width: 640px) {
+  .acciones-home {
+    margin: 8px 0 0;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 640px) {
+  .ingreso-movil {
+    display: block;
+    margin-left: auto;
+    margin-right: 12px;
+    padding: 8px 14px;
+    border: 0;
+    border-radius: 99px;
+    background: var(--superficie);
+    color: var(--tinta);
+    font-size: 12px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .cabecera-home .marca-home {
+    font-size: 16px;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 640px) {
+  .cabecera-home .emblema {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+@media (max-width: 640px) {
+  .cabecera-home .emblema svg {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+@media (max-width: 640px) {
+  .ingreso-movil {
+    padding-inline: 10px;
+    margin-right: 8px;
+  }
+}
+.taquilla .cabecera-home {
+  background: #fff;
+}
+.taquilla .ingresar-home {
+  border: 1px solid #8c8c8c;
+  border-radius: 8px;
+  padding: 9px 18px;
+}
+
+.taquilla .buscar-cabecera {
+  background: #f5f5f5;
+  border: 1px solid #dedede;
+  border-radius: 8px;
+  padding: 10px 18px;
+  color: #595959;
+  font-size: 13px;
+}
+@media (max-width: 1200px) {
+  .taquilla .buscar-cabecera {
+    display: none;
+  }
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\Navbar\Navbar.jsx ===
+import { useId, useRef, useState } from "react";
+import Marca from "../Marca/Marca.jsx";
+import MenuMovil from "../MenuMovil/MenuMovil.jsx";
+import SelectorIdioma from "../SelectorIdioma/SelectorIdioma.jsx";
+import { interfaz } from "../../data/interfaz.js";
+import "./Navbar.css";
+export default function Navbar({
+  nombre,
+  tipo,
+  idioma,
+  onCambiarIdioma,
+  destino,
+  etiqueta,
+  onCuenta,
+}) {
+  const [abierto, setAbierto] = useState(false);
+  const boton = useRef(null);
+  const id = useId();
+  const t = interfaz[idioma];
+  return (
+    <header
+      className="cabecera-home"
+      onKeyDown={(evento) => {
+        if (evento.key === "Escape" && abierto) {
+          setAbierto(false);
+          boton.current?.focus();
+        }
+      }}
+    >
+      <div className="ancho-home fila-cabecera">
+        <Marca nombre={nombre} tipo={tipo} />
+        <button className="ingreso-movil" onClick={() => onCuenta("ingresar")}>
+          {t.ingresar}
+        </button>
+        <MenuMovil
+          abierto={abierto}
+          onAlternar={() => setAbierto(!abierto)}
+          menuId={id}
+          botonRef={boton}
+          textos={t}
+        />
+        <nav
+          id={id}
+          className={`menu-home ${abierto ? "abierto" : ""}`}
+          aria-label={t.navegacion}
+        >
+          <a
+            href="#contenido"
+            aria-current="page"
+            onClick={() => setAbierto(false)}
+          >
+            {t.inicio}
+          </a>
+          <a href={destino} onClick={() => setAbierto(false)}>
+            {etiqueta}
+          </a>
+          <div className="acciones-home">
+            {tipo === "taquilla" && (
+              <a
+                className="buscar-cabecera"
+                href="#buscador-eventos"
+                onClick={() => setAbierto(false)}
+              >
+                {t.buscar}
+              </a>
+            )}
+            <SelectorIdioma
+              idioma={idioma}
+              onCambiar={onCambiarIdioma}
+              etiqueta={t.idioma}
+            />
+            <button
+              className="ingresar-home"
+              onClick={() => onCuenta("ingresar")}
+            >
+              {t.ingresar}
+            </button>
+            <button
+              className="boton-home primario"
+              onClick={() => onCuenta("registro")}
+            >
+              {t.registro}
+            </button>
+          </div>
+        </nav>
+      </div>
+    </header>
+  );
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\PreferenciasCookies\PreferenciasCookies.css ===
+.preferencias-dialogo {
+  width: min(560px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  padding: 28px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  color: var(--tinta);
+  background: var(--superficie);
+}
+.preferencias-dialogo::backdrop {
+  background: rgb(0 0 0 / 65%);
+}
+.preferencias-dialogo p {
+  margin-block: 12px 20px;
+}
+.preferencias-dialogo h2 {
+  font-size: 26px;
+}
+.preferencias-dialogo h3 {
+  font-size: 18px;
+}
+.opcion-cookie {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-block: 24px;
+  padding: 16px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.opcion-cookie input {
+  width: 24px;
+  height: 24px;
+  accent-color: var(--acento);
+  flex-shrink: 0;
+}
+.opcion-cookie span span {
+  display: block;
+}
+body:has(.preferencias-dialogo[open]) {
+  overflow: hidden;
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\PreferenciasCookies\PreferenciasCookies.jsx ===
+import { useEffect, useId, useRef, useState } from "react";
+import "./PreferenciasCookies.css";
+export default function PreferenciasCookies({
+  abierto,
+  textos,
+  permitir,
+  onGuardar,
+  onCerrar,
+  error,
+}) {
+  const dialogo = useRef(null);
+  const id = useId();
+  const [seleccion, setSeleccion] = useState(permitir);
+  useEffect(() => {
+    if (abierto) {
+      setSeleccion(permitir);
+      if (!dialogo.current.open) dialogo.current.showModal();
+    } else if (dialogo.current.open) dialogo.current.close();
+  }, [abierto, permitir]);
+  return (
+    <dialog
+      className="preferencias-dialogo"
+      ref={dialogo}
+      aria-labelledby={id}
+      onClose={onCerrar}
+    >
+      <h2 id={id}>{textos.cookies}</h2>
+      <p>{textos.descripcion}</p>
+      <section>
+        <h3>{textos.necesarias}</h3>
+        <p>{textos.necesariasTexto}</p>
+      </section>
+      <label className="opcion-cookie">
+        <input
+          type="checkbox"
+          checked={seleccion}
+          onChange={(e) => setSeleccion(e.target.checked)}
+        />
+        <span>
+          <strong>{textos.preferencias}</strong>
+          <span>{textos.preferenciasTexto}</span>
+        </span>
+      </label>
+      {error && <p role="alert">{textos.error}</p>}
+      <div className="grupo-botones">
+        <button
+          className="boton-home primario"
+          onClick={() => onGuardar(seleccion)}
+        >
+          {textos.guardar}
+        </button>
+        <button
+          className="boton-home secundario"
+          onClick={() => dialogo.current.close()}
+        >
+          {textos.cerrar}
+        </button>
+      </div>
+    </dialog>
+  );
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\SaltarContenido\SaltarContenido.css ===
+.saltar-contenido {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  transform: translateY(-180%);
+  padding: 12px 20px;
+  background: var(--acento);
+  color: var(--sobre-acento) !important;
+  z-index: 30;
+}
+.saltar-contenido:focus {
+  transform: translateY(0);
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\SaltarContenido\SaltarContenido.jsx ===
+import "./SaltarContenido.css";
+export default function SaltarContenido({ texto, destino = "contenido" }) {
+  return (
+    <a className="saltar-contenido" href={`#${destino}`}>
+      {texto}
+    </a>
+  );
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\SeccionEventos\SeccionEventos.css ===
+.seccion-eventos {
+  margin-bottom: 48px;
+}
+.seccion-eventos .titulo-seccion {
+  align-items: flex-end;
+}
+.seccion-eventos h2 {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  margin-bottom: 6px;
+}
+.seccion-eventos .titulo-seccion p {
+  color: #595959;
+  font-size: 16px;
+}
+.eventos-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+}
+.sin-resultados {
+  padding: 48px;
+  border: 1px solid #dedede;
+  border-radius: 12px;
+  background: #fff;
+  text-align: center;
+}
+.sin-resultados p {
+  margin: 12px 0 24px;
+}
+@media (max-width: 1100px) {
+  .eventos-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .eventos-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+@media (max-width: 640px) {
+  .seccion-eventos .titulo-seccion {
+    align-items: flex-start;
+  }
+}
+@media (max-width: 640px) {
+  .seccion-eventos h2 {
+    font-size: 22px;
+  }
+}
+@media (max-width: 640px) {
+  .seccion-eventos .titulo-seccion p {
+    font-size: 14px;
+  }
+}
+@media (max-width: 640px) {
+  .sin-resultados {
+    padding: 24px;
+  }
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\SeccionEventos\SeccionEventos.jsx ===
+import Flecha from "../Flecha/Flecha.jsx";
+import TarjetaEvento from "../TarjetaEvento/TarjetaEvento.jsx";
+import "./SeccionEventos.css";
+export default function SeccionEventos({
+  id,
+  titulo,
+  descripcion,
+  eventos,
+  en,
+  onAbrir,
+  onVerTodos,
+}) {
+  return (
+    <section
+      className="seccion-eventos"
+      id={id}
+      aria-labelledby={`${id}-titulo`}
+    >
+      <div className="titulo-seccion">
+        <div>
+          <h2 id={`${id}-titulo`}>{titulo}</h2>
+          <p role="status">{descripcion}</p>
+        </div>
+        <button className="enlace-home" onClick={onVerTodos}>
+          {en ? "View all" : "Ver todos"}
+          <Flecha />
+        </button>
+      </div>
+      <div className="eventos-grid">
+        {eventos.map((evento) => (
+          <TarjetaEvento
+            key={evento.nombre}
+            evento={evento}
+            en={en}
+            onAbrir={onAbrir}
+          />
+        ))}
+      </div>
+      {!eventos.length && (
+        <div className="sin-resultados">
+          <h3>{en ? "No events found" : "No encontramos eventos"}</h3>
+          <p>{en ? "Try another search." : "Prueba con otra bÃºsqueda."}</p>
+          <button className="boton-home primario" onClick={onVerTodos}>
+            {en ? "View all events" : "Ver todos los eventos"}
+          </button>
+        </div>
+      )}
+    </section>
+  );
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\SelectorIdioma\SelectorIdioma.css ===
+.idiomas-home {
+  display: flex;
+  padding: 3px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 99px;
+}
+.idiomas-home button {
+  border: 0;
+  border-radius: 99px;
+  padding: 7px 12px;
+  color: var(--tinta);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 700;
+}
+.idiomas-home button[aria-pressed="true"] {
+  background: var(--acento);
+  color: var(--sobre-acento);
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\SelectorIdioma\SelectorIdioma.jsx ===
+import "./SelectorIdioma.css";
+export default function SelectorIdioma({ idioma, onCambiar, etiqueta }) {
+  return (
+    <div className="idiomas-home" role="group" aria-label={etiqueta}>
+      {["es", "en"].map((valor) => (
+        <button
+          type="button"
+          key={valor}
+          lang={valor}
+          aria-pressed={idioma === valor}
+          onClick={() => onCambiar(valor)}
+        >
+          {valor.toUpperCase()}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\TarjetaEvento\TarjetaEvento.css ===
+.tarjeta-evento {
+  overflow: hidden;
+  border: 1px solid #dedede;
+  border-radius: 12px;
+  background: #fff;
+}
+.contenido-evento {
+  padding: 16px;
+}
+.contenido-evento h3 {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  margin: 12px 0;
+}
+.contenido-evento > p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #595959;
+  margin-top: 10px;
+}
+.contenido-evento > p svg {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+.precio-evento {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 24px;
+}
+.precio-evento small {
+  display: block;
+  color: #595959;
+  font-size: 12px;
+}
+.precio-evento strong {
+  font-size: 17px;
+  font-weight: 500;
+}
+.precio-evento .boton-home {
+  border-color: #8c8c8c;
+  padding: 9px 16px;
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\components\TarjetaEvento\TarjetaEvento.jsx ===
+import AficheEvento from "../AficheEvento/AficheEvento.jsx";
+import IconoEvento from "../IconoEvento/IconoEvento.jsx";
+import { categorias, categoriasEn, dinero } from "../../data/catalogo.js";
+import "./TarjetaEvento.css";
+export default function TarjetaEvento({ evento, onAbrir, en }) {
+  return (
+    <article className="tarjeta-evento">
+      <AficheEvento variante={evento.arte} />
+      <div className="contenido-evento">
+        <span className="etiqueta-evento">
+          {en
+            ? categoriasEn[categorias.indexOf(evento.categoria)]
+            : evento.etiqueta}
+        </span>
+        <h3>{evento.nombre}</h3>
+        <p>
+          <IconoEvento tipo="fecha" />
+          {en
+            ? new Date(`${evento.fecha}T12:00:00`).toLocaleDateString("en", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+              })
+            : evento.horario}
+        </p>
+        <p>
+          <IconoEvento tipo="lugar" />
+          {evento.lugar}, {evento.ciudad}
+        </p>
+        <div className="precio-evento">
+          <div>
+            <small>{en ? "From" : "Desde"}</small>
+            <strong>{dinero(evento.precio)}</strong>
+          </div>
+          <button
+            className="boton-home secundario"
+            aria-label={`${en ? "View event" : "Ver evento"}: ${evento.nombre}`}
+            onClick={() => onAbrir(evento)}
+          >
+            {en ? "View event" : "Ver evento"}
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\config\proyecto.js ===
+export const proyecto = {
+  id: "taquilla",
+  nombre: "taquilla",
+  api: "https://yanethm-taquilla-api.fly.dev/api/v1",
+};
+
+=== C:\Users\DARLIN\Taquilla\src\context\PreferenciasContext.jsx ===
+import { createContext, useContext, useEffect, useState } from "react";
+import {
+  leerCookie,
+  guardarCookie,
+  borrarCookie,
+} from "../services/cookies.js";
+import { proyecto } from "../config/proyecto.js";
+
+const PreferenciasContext = createContext(null);
+
+export function PreferenciasProvider({ children }) {
+  const [consentimiento, setConsentimiento] = useState(() => {
+    const valor = leerCookie("consentimiento");
+    return ["aceptado", "rechazado"].includes(valor) ? valor : null;
+  });
+  const [idioma, setIdioma] = useState(() =>
+    leerCookie("consentimiento") === "aceptado" && leerCookie("idioma") === "en"
+      ? "en"
+      : "es",
+  );
+  const [error, setError] = useState(false);
+  useEffect(() => {
+    document.documentElement.lang = idioma;
+    document.title = `${proyecto.nombre} Â· ${idioma === "en" ? "Home" : "Inicio"}`;
+  }, [idioma]);
+  function cambiarIdioma(valor) {
+    setIdioma(valor);
+    try {
+      if (consentimiento === "aceptado") guardarCookie("idioma", valor);
+      setError(false);
+    } catch {
+      setError(true);
+    }
+  }
+  function guardarConsentimiento(permitir) {
+    try {
+      const valor = permitir ? "aceptado" : "rechazado";
+      guardarCookie("consentimiento", valor);
+      if (permitir) guardarCookie("idioma", idioma);
+      else borrarCookie("idioma");
+      setConsentimiento(valor);
+      setError(false);
+      return true;
+    } catch {
+      setError(true);
+      return false;
+    }
+  }
+  return (
+    <PreferenciasContext.Provider
+      value={{
+        idioma,
+        cambiarIdioma,
+        consentimiento,
+        guardarConsentimiento,
+        error,
+      }}
+    >
+      {children}
+    </PreferenciasContext.Provider>
+  );
+}
+
+export function usePreferencias() {
+  const valor = useContext(PreferenciasContext);
+  if (!valor) throw new Error("PreferenciasProvider requerido");
+  return valor;
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\data\catalogo.js ===
+export const eventos = [
+  {
+    nombre: "Noche de Salsa Brava",
+    categoria: "Conciertos",
+    etiqueta: "Concierto",
+    fecha: "2026-11-14",
+    horario: "SÃ¡b 14 nov Â· 8:00 p. m.",
+    lugar: "Teatro Aurora",
+    ciudad: "Manizales",
+    precio: 95000,
+    arte: 0,
+  },
+  {
+    nombre: "Festival Niebla 2026",
+    categoria: "Festivales",
+    etiqueta: "Festival",
+    fecha: "2026-11-20",
+    horario: "Vie 20 nov Â· 4:00 p. m.",
+    lugar: "Parque del Bosque",
+    ciudad: "Manizales",
+    precio: 140000,
+    arte: 1,
+  },
+  {
+    nombre: "La casa de los relojes",
+    categoria: "Teatro",
+    etiqueta: "Teatro",
+    fecha: "2026-11-21",
+    horario: "SÃ¡b 21 nov Â· 7:30 p. m.",
+    lugar: "Teatro Aurora",
+    ciudad: "Manizales",
+    precio: 60000,
+    arte: 2,
+  },
+  {
+    nombre: "ClÃ¡sico MontaÃ±a vs. RÃ­o",
+    categoria: "Deportes",
+    etiqueta: "Deportes",
+    fecha: "2026-11-22",
+    horario: "Dom 22 nov Â· 5:00 p. m.",
+    lugar: "Estadio Norte",
+    ciudad: "Pereira",
+    precio: 45000,
+    arte: 3,
+  },
+  {
+    nombre: "SinfÃ³nica bajo las estrellas",
+    categoria: "Conciertos",
+    etiqueta: "Concierto",
+    fecha: "2026-11-27",
+    horario: "Vie 27 nov Â· 7:00 p. m.",
+    lugar: "Auditorio Mayor",
+    ciudad: "BogotÃ¡",
+    precio: 120000,
+    arte: 4,
+  },
+  {
+    nombre: "Risas sin filtro",
+    categoria: "Comedia",
+    etiqueta: "Comedia",
+    fecha: "2026-11-28",
+    horario: "SÃ¡b 28 nov Â· 9:00 p. m.",
+    lugar: "Sala La Tertulia",
+    ciudad: "MedellÃ­n",
+    precio: 55000,
+    arte: 5,
+  },
+  {
+    nombre: "Jazz en el patio",
+    categoria: "Conciertos",
+    etiqueta: "Concierto",
+    fecha: "2026-12-04",
+    horario: "Vie 4 dic Â· 8:30 p. m.",
+    lugar: "Casa Patio",
+    ciudad: "Manizales",
+    precio: 70000,
+    arte: 6,
+  },
+  {
+    nombre: "El circo de papel",
+    categoria: "Familiares",
+    etiqueta: "Familiar",
+    fecha: "2026-12-05",
+    horario: "SÃ¡b 5 dic Â· 3:00 p. m.",
+    lugar: "Coliseo Central",
+    ciudad: "Armenia",
+    precio: 38000,
+    arte: 7,
+  },
+];
+export const categorias = [
+  "Conciertos",
+  "Teatro",
+  "Deportes",
+  "Festivales",
+  "Comedia",
+  "Familiares",
+];
+export const categoriasEn = [
+  "Concerts",
+  "Theatre",
+  "Sports",
+  "Festivals",
+  "Comedy",
+  "Family",
+];
+export const cantidades = [42, 18, 12, 9, 7, 11];
+export const dinero = (valor) => `$${valor.toLocaleString("es-CO")}`;
+export const normalizar = (texto) =>
+  texto
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+
+=== C:\Users\DARLIN\Taquilla\src\data\interfaz.js ===
+export const interfaz = {
+  es: {
+    inicio: "Inicio",
+    ingresar: "Ingresar",
+    registro: "Crear cuenta",
+    abrirMenu: "Abrir menÃº",
+    cerrarMenu: "Cerrar menÃº",
+    navegacion: "NavegaciÃ³n principal",
+    idioma: "Idioma",
+    buscar: "Busca eventos o artistas",
+    explora: "Explora",
+    cuenta: "Tu cuenta",
+    academico: "Proyecto acadÃ©mico",
+    cookies: "Preferencias de cookies",
+    saltar: "Saltar al contenido",
+    banner: "Preferencias del navegador",
+    descripcion:
+      "Puedes permitir que este proyecto recuerde tu idioma. No utilizamos cookies de analÃ­tica ni publicidad.",
+    aceptar: "Aceptar preferencias",
+    rechazar: "Rechazar opcionales",
+    configurar: "Configurar",
+    guardar: "Guardar selecciÃ³n",
+    cerrar: "Cerrar preferencias",
+    necesarias: "Necesarias",
+    necesariasTexto: "Guardan tu decisiÃ³n de consentimiento. Siempre activas.",
+    preferencias: "Recordar idioma",
+    preferenciasTexto: "Conserva el idioma elegido en este navegador.",
+    guardado: "Preferencias guardadas.",
+    error: "No pudimos guardar la decisiÃ³n en este navegador.",
+  },
+  en: {
+    inicio: "Home",
+    ingresar: "Log in",
+    registro: "Sign up",
+    abrirMenu: "Open menu",
+    cerrarMenu: "Close menu",
+    navegacion: "Main navigation",
+    idioma: "Language",
+    buscar: "Search events or artists",
+    explora: "Explore",
+    cuenta: "Your account",
+    academico: "Academic project",
+    cookies: "Cookie preferences",
+    saltar: "Skip to content",
+    banner: "Browser preferences",
+    descripcion:
+      "You can allow this project to remember your language. We do not use analytics or advertising cookies.",
+    aceptar: "Accept preferences",
+    rechazar: "Reject optional",
+    configurar: "Configure",
+    guardar: "Save selection",
+    cerrar: "Close preferences",
+    necesarias: "Necessary",
+    necesariasTexto: "Store your consent decision. Always active.",
+    preferencias: "Remember language",
+    preferenciasTexto: "Keep your chosen language in this browser.",
+    guardado: "Preferences saved.",
+    error: "We could not save your decision in this browser.",
+  },
+};
+
+
+=== C:\Users\DARLIN\Taquilla\src\hooks\useDetalle.js ===
+import { useState } from "react";
+export function useDetalle(idioma = "es") {
+  const [detalle, setDetalle] = useState(null);
+  function abrirCuenta(tipo) {
+    const en = idioma === "en";
+    setDetalle({
+      titulo:
+        tipo === "registro"
+          ? en
+            ? "Create an account"
+            : "Crear cuenta"
+          : en
+            ? "Log in"
+            : "Iniciar sesiÃ³n",
+      descripcion: en
+        ? "Account access is not available yet. You can explore the public catalogue without signing in."
+        : "El acceso a cuentas aÃºn no estÃ¡ disponible. Puedes explorar el catÃ¡logo pÃºblico sin iniciar sesiÃ³n.",
+      cerrar: en ? "Continue exploring" : "Seguir explorando",
+    });
+  }
+  return { detalle, setDetalle, abrirCuenta };
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\hooks\useEventos.js ===
+import { useState } from "react";
+import { normalizar } from "../data/catalogo.js";
+
+export function useEventos(eventos) {
+  const [filtros, setFiltros] = useState(null);
+  const resultados = eventos.filter(
+    (evento) =>
+      !filtros ||
+      ((!filtros.consulta ||
+        normalizar(evento.nombre).includes(normalizar(filtros.consulta))) &&
+        (!filtros.ciudad || evento.ciudad === filtros.ciudad) &&
+        (!filtros.fecha || evento.fecha === filtros.fecha) &&
+        (!filtros.categoria || evento.categoria === filtros.categoria)),
+  );
+  function buscar(valores) {
+    setFiltros(valores);
+    document.getElementById("eventos")?.scrollIntoView({ block: "start" });
+  }
+  return {
+    filtros,
+    resultados,
+    buscar,
+    setFiltros,
+    filtrarCategoria: (categoria) => buscar({ categoria }),
+  };
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\hooks\useRecurso.js ===
+import { useEffect, useState } from "react";
+import { consultar } from "../services/api.js";
+
+export function useRecurso(ruta) {
+  const [estado, setEstado] = useState({
+    ruta: null,
+    datos: null,
+    error: null,
+    cargando: true,
+  });
+  const [intento, setIntento] = useState(0);
+  useEffect(() => {
+    if (!ruta) return;
+    const controlador = new AbortController();
+    let vigente = true;
+    setEstado({ ruta, datos: null, error: null, cargando: true });
+    consultar(ruta, { signal: controlador.signal })
+      .then((datos) => {
+        if (vigente) setEstado({ ruta, datos, error: null, cargando: false });
+      })
+      .catch((error) => {
+        if (vigente && error.name !== "AbortError")
+          setEstado({ ruta, datos: null, error, cargando: false });
+      });
+    return () => {
+      vigente = false;
+      controlador.abort();
+    };
+  }, [ruta, intento]);
+  const actual =
+    estado.ruta === ruta
+      ? estado
+      : { datos: null, error: null, cargando: Boolean(ruta) };
+  return { ...actual, recargar: () => setIntento((valor) => valor + 1) };
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\pages\Home.jsx ===
+import LayoutPublico from "../components/LayoutPublico/LayoutPublico.jsx";
+import HeroTaquilla from "../components/HeroTaquilla/HeroTaquilla.jsx";
+import BuscadorEventos from "../components/BuscadorEventos/BuscadorEventos.jsx";
+import CategoriasEventos from "../components/CategoriasEventos/CategoriasEventos.jsx";
+import SeccionEventos from "../components/SeccionEventos/SeccionEventos.jsx";
+import AficheEvento from "../components/AficheEvento/AficheEvento.jsx";
+import DialogoDetalle from "../components/DialogoDetalle/DialogoDetalle.jsx";
+import { usePreferencias } from "../context/PreferenciasContext.jsx";
+import { useDetalle } from "../hooks/useDetalle.js";
+import { useEventos } from "../hooks/useEventos.js";
+import { eventos, categorias, categoriasEn, dinero } from "../data/catalogo.js";
+
+export default function Home() {
+  const { idioma } = usePreferencias();
+  const en = idioma === "en";
+  const { detalle, setDetalle, abrirCuenta } = useDetalle(idioma);
+  const { filtros, resultados, buscar, setFiltros, filtrarCategoria } =
+    useEventos(eventos);
+  const cantidades = categorias.map(
+    (categoria) =>
+      eventos.filter((evento) => evento.categoria === categoria).length,
+  );
+  function abrirEvento(evento) {
+    setDetalle({
+      titulo: evento.nombre,
+      descripcion: `${evento.horario} Â· ${evento.lugar}, ${evento.ciudad}`,
+      contenido: (
+        <div className="resumen-evento">
+          <AficheEvento variante={evento.arte} />
+          <p>{dinero(evento.precio)} COP</p>
+          <small>
+            {en
+              ? "Sample event. Tickets are not for sale."
+              : "Evento de ejemplo. No hay venta de entradas."}
+          </small>
+        </div>
+      ),
+      cerrar: en ? "Close" : "Cerrar",
+    });
+  }
+  return (
+    <LayoutPublico
+      destino="#eventos"
+      etiqueta={en ? "Explore" : "Explorar"}
+      descripcion={
+        en
+          ? "Concerts, theatre, sports and festivals in one place."
+          : "Conciertos, teatro, deportes y festivales en un solo lugar."
+      }
+      onCuenta={abrirCuenta}
+    >
+      <HeroTaquilla
+        en={en}
+        destacado={eventos[1]}
+        abrirEvento={abrirEvento}
+        setFiltros={setFiltros}
+        filtrarCategoria={filtrarCategoria}
+      >
+        <BuscadorEventos
+          en={en}
+          eventos={eventos}
+          onBuscar={buscar}
+          filtrosAplicados={filtros}
+        />
+      </HeroTaquilla>
+      <div className="ancho-home">
+        <CategoriasEventos
+          categorias={categorias}
+          categoriasEn={categoriasEn}
+          cantidades={cantidades}
+          filtros={filtros}
+          en={en}
+          filtrarCategoria={filtrarCategoria}
+        />
+        <SeccionEventos
+          id="eventos"
+          titulo={
+            filtros
+              ? en
+                ? "Search results"
+                : "Resultados de bÃºsqueda"
+              : en
+                ? "Featured events"
+                : "Eventos destacados"
+          }
+          descripcion={
+            filtros
+              ? `${resultados.length} ${en ? "results" : "resultados"}`
+              : en
+                ? "Explore our event selection"
+                : "Explora nuestra selecciÃ³n de eventos"
+          }
+          eventos={filtros ? resultados : eventos.slice(0, 4)}
+          en={en}
+          onAbrir={abrirEvento}
+          onVerTodos={() => buscar({})}
+        />
+        {!filtros && (
+          <SeccionEventos
+            id="eventos-ciudad"
+            titulo={en ? "Events in Manizales" : "Eventos en Manizales"}
+            descripcion={
+              en
+                ? "Discover events in your city"
+                : "Descubre los eventos de tu ciudad"
+            }
+            eventos={eventos.filter((evento) => evento.ciudad === "Manizales")}
+            en={en}
+            onAbrir={abrirEvento}
+            onVerTodos={() => buscar({ ciudad: "Manizales" })}
+          />
+        )}
+      </div>
+      <DialogoDetalle detalle={detalle} onCerrar={() => setDetalle(null)} />
+    </LayoutPublico>
+  );
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\services\api.js ===
+import { proyecto } from "../config/proyecto.js";
+
+export async function consultar(ruta, { signal } = {}) {
+  const respuesta = await fetch(`${proyecto.api}${ruta}`, {
+    signal,
+    headers: { Accept: "application/json" },
+  });
+  const datos = await respuesta.json();
+  if (!respuesta.ok) {
+    const error = new Error(datos.error?.mensaje || `HTTP ${respuesta.status}`);
+    error.codigo = datos.error?.codigo;
+    error.campos = datos.error?.campos;
+    throw error;
+  }
+  return datos;
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\services\cookies.js ===
+import { proyecto } from "../config/proyecto.js";
+
+const nombre = (clave) => `${proyecto.id}_${clave}`;
+
+export function leerCookie(clave) {
+  const prefijo = `${nombre(clave)}=`;
+  const cookie = document.cookie
+    .split("; ")
+    .find((valor) => valor.startsWith(prefijo));
+  try {
+    return cookie ? decodeURIComponent(cookie.slice(prefijo.length)) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function guardarCookie(clave, valor) {
+  document.cookie = `${nombre(clave)}=${encodeURIComponent(valor)}; Path=/; Max-Age=15552000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
+  if (leerCookie(clave) !== valor) throw new Error("cookie_no_guardada");
+}
+
+export function borrarCookie(clave) {
+  document.cookie = `${nombre(clave)}=; Path=/; Max-Age=0; SameSite=Lax`;
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\styles\base.css ===
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: var(--fuente-texto);
+  line-height: 1.6;
+  background: var(--fondo);
+  color: var(--tinta);
+}
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+button,
+input,
+select {
+  font: inherit;
+}
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.landing {
+  background: var(--fondo);
+  color: var(--tinta);
+  min-height: 100dvh;
+  font-family: "DM Sans", sans-serif;
+}
+
+.landing h1,
+.landing h2,
+.landing h3,
+.landing p {
+  margin: 0;
+}
+.landing h1,
+.landing h2,
+.landing h3 {
+  text-wrap: balance;
+}
+.landing p {
+  text-wrap: pretty;
+}
+.landing button,
+.landing input,
+.landing select {
+  font: inherit;
+}
+.landing button,
+.landing a {
+  -webkit-tap-highlight-color: transparent;
+}
+.landing button {
+  cursor: pointer;
+}
+.landing a {
+  color: inherit;
+  text-decoration: none;
+}
+.landing a:hover {
+  color: inherit;
+}
+.landing button:focus-visible,
+.landing a:focus-visible,
+.landing input:focus-visible,
+.landing select:focus-visible {
+  outline: 3px solid var(--acento);
+  outline-offset: 5px;
+}
+.landing main:focus {
+  outline: none;
+}
+.landing [id] {
+  scroll-margin-top: 24px;
+}
+.ancho-home {
+  width: min(1280px, calc(100% - 80px));
+  margin-inline: auto;
+}
+.boton-home {
+  min-height: 44px;
+  padding: 12px 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid var(--borde);
+  border-radius: 99px;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--tinta);
+  background: transparent;
+  transition:
+    transform 160ms ease,
+    filter 160ms ease;
+}
+.boton-home.primario {
+  background: var(--acento);
+  border-color: var(--acento);
+  color: var(--sobre-acento);
+}
+.boton-home:hover {
+  filter: brightness(0.94);
+  transform: translateY(-2px);
+}
+.grupo-botones {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.titulo-seccion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.titulo-seccion h2 {
+  font-size: 28px;
+}
+.enlace-home {
+  color: var(--acento) !important;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  background: none;
+  border: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.enlace-home:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .ancho-home {
+    width: calc(100% - 48px);
+  }
+}
+@media (max-width: 640px) {
+  .ancho-home {
+    width: calc(100% - 40px);
+  }
+}
+@media (max-width: 640px) {
+  .titulo-seccion {
+    gap: 12px;
+  }
+}
+@media (max-width: 640px) {
+  .titulo-seccion h2 {
+    font-size: 21px;
+  }
+}
+@media (max-width: 640px) {
+  .enlace-home {
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing *,
+  .landing *::before,
+  .landing *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+.taquilla {
+  font-family: "Instrument Sans", sans-serif;
+}
+.taquilla h1,
+.taquilla h2,
+.taquilla h3 {
+  font-family: "Instrument Sans", sans-serif;
+}
+.taquilla .boton-home {
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 18px;
+  min-height: 42px;
+}
+.etiqueta-evento {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #f0f0f0;
+  color: #141414;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\styles\tokens.css ===
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap");
+
+:root {
+  --fondo: #f7f7f7;
+  --superficie: #fff;
+  --tinta: #141414;
+  --suave: #595959;
+  --acento: #141414;
+  --sobre-acento: #fff;
+  --borde: #dedede;
+  --fuente-texto: "Instrument Sans", sans-serif;
+  --fuente-titulos: "Instrument Sans", sans-serif;
+  --color-foco: #713bfa;
+  --espacio-1: 0.5rem;
+  --espacio-2: 1rem;
+  --espacio-3: 1.5rem;
+  --espacio-4: 2rem;
+  --radio: 0.75rem;
+  --ancho-contenido: 1280px;
+}
+
+
+=== C:\Users\DARLIN\Taquilla\src\utils\fechas.js ===
+const ZONA = "America/Bogota";
+const LOCALES = { es: "es-CO", en: "en-US" };
+const PRESETS = ["hoy", "finDeSemana", "mes"];
+
+// en-CA da el formato AAAA-MM-DD
+const formatoDia = new Intl.DateTimeFormat("en-CA", {
+  timeZone: ZONA,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+export function diaLocal(fecha) {
+  return formatoDia.format(fecha);
+}
+
+function sumarDias(dia, n) {
+  const fecha = new Date(`${dia}T12:00:00Z`);
+  fecha.setUTCDate(fecha.getUTCDate() + n);
+  return fecha.toISOString().slice(0, 10);
+}
+
+function rangoPreset(preset, ahora = new Date()) {
+  const hoy = diaLocal(ahora);
+
+  if (preset === "hoy") return { desde: hoy, hasta: hoy };
+
+  if (preset === "mes") {
+    const [anio, mes] = hoy.split("-").map(Number);
+    const ultimo = new Date(Date.UTC(anio, mes, 0)).toISOString().slice(0, 10);
+    return { desde: hoy, hasta: ultimo };
+  }
+
+  // Fin de semana = sÃ¡bado y domingo. Si hoy es domingo, solo hoy.
+  const diaSemana = new Date(`${hoy}T12:00:00Z`).getUTCDay();
+  if (diaSemana === 0) return { desde: hoy, hasta: hoy };
+  const sabado = sumarDias(hoy, 6 - diaSemana);
+  return { desde: sabado, hasta: sumarDias(sabado, 1) };
+}
+
+// Devuelve { desde, hasta } o null si no hay filtro de fecha activo
+export function rangoDeFiltros({ fecha, desde, hasta } = {}) {
+  if (fecha === "rango") {
+    return desde || hasta ? { desde: desde || null, hasta: hasta || null } : null;
+  }
+  return PRESETS.includes(fecha) ? rangoPreset(fecha) : null;
+}
+
+export function filtrarPorFecha(eventos, { desde, hasta }) {
+  return eventos.filter((evento) => {
+    const dia = diaLocal(new Date(evento.fecha));
+    return (!desde || dia >= desde) && (!hasta || dia <= hasta);
+  });
+}
+
+export function formatearDiaCorto(dia, idioma) {
+  return new Date(`${dia}T12:00:00Z`).toLocaleDateString(
+    LOCALES[idioma] ?? LOCALES.es,
+    { day: "numeric", month: "short", timeZone: "UTC" },
+  );
+}
+
+=== C:\Users\DARLIN\Taquilla\src\utils\formato.js ===
+const LOCALES = { es: "es-CO", en: "en-US" };
+const ZONA = "America/Bogota";
+
+export function formatearFecha(iso, idioma) {
+  const fecha = new Date(iso);
+  const locale = LOCALES[idioma] ?? LOCALES.es;
+
+  const dia = fecha.toLocaleDateString(locale, {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    timeZone: ZONA,
+  });
+
+  const hora = fecha.toLocaleTimeString(locale, {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: ZONA,
+  });
+
+  return `${dia} Â· ${hora}`;
+}
+
+export function formatearPrecio(valor, idioma) {
+  return new Intl.NumberFormat(LOCALES[idioma] ?? LOCALES.es, {
+    style: "currency",
+    currency: "COP",
+    currencyDisplay: "narrowSymbol",
+    maximumFractionDigits: 0,
+  }).format(valor);
+}
+
+=== C:\Users\DARLIN\Taquilla\src\utils\rutas.js ===
+// Destinos compartidos. Cuando exista un router real, se cambian solo aquÃ­.
+export const RUTAS = {
+  inicio: "#inicio",
+  explorar: "#explorar",
+  ingresar: "#ingresar",
+  crearCuenta: "#crearCuenta",
+};
+
+=== C:\Users\DARLIN\Taquilla\src\utils\textosInicio.js ===
+import { formatearFecha, formatearPrecio } from "./formato.js";
+
+export function adaptarInicio(textos, { idioma = "es", evento } = {}) {
+  const p = textos?.paginas?.inicio;
+  if (!p) return undefined;
+
+  const buscador = p.hero?.buscador;
+  const destacado = p.hero?.destacado;
+  const temporada = "nov â€“ dic 2026";
+
+  return {
+    badge: p.hero?.etiquetas?.temporada?.replace("{temporada}", temporada),
+    titulo: p.hero?.titulo,
+    descripcion: p.hero?.subtitulo,
+    buscador: {
+      aria: textos.navbar?.buscador?.aria,
+      que: buscador?.etiquetas?.que,
+      quePlaceholder: buscador?.placeholders?.que,
+      donde: buscador?.etiquetas?.donde,
+      cuando: buscador?.etiquetas?.cuando,
+      cuandoPlaceholder: buscador?.placeholders?.cuando,
+      boton: buscador?.botones?.buscar,
+    },
+    populares: {
+      etiqueta: buscador?.populares,
+      items: Object.values(p.busquedasPopulares?.etiquetas ?? {}),
+    },
+    // Solo se agrega si hay evento; si no, Inicio usa su respaldo
+    ...(evento && {
+      destacado: {
+        etiqueta: destacado?.etiqueta ?? textos.componentes?.destacado,
+        titulo: evento.nombre,
+        slug: evento.slug,
+        colores: evento.colores,
+        lugar: `${formatearFecha(evento.fecha, idioma)} Â· ${evento.recinto}`,
+        precio: destacado?.desde?.replace(
+          "{precio}",
+          formatearPrecio(evento.precio, idioma),
+        ),
+        boton:
+          destacado?.botones?.verEvento ??
+          (idioma === "en" ? "View event" : "Ver evento"),
+      },
+    }),
+  };
+}
+

@@ -1,20 +1,80 @@
-@import url("https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap");
-
 :root {
+  /* Color: tomado del proyecto base, coincide con Figma */
   --fondo: #f7f7f7;
-  --superficie: #fff;
+  --superficie: #ffffff;
+  --superficie-suave: #f0f0f0;
+  --superficie-hover: #ededed;
   --tinta: #141414;
   --suave: #595959;
   --acento: #141414;
-  --sobre-acento: #fff;
+  --sobre-acento: #ffffff;
   --borde: #dedede;
-  --fuente-texto: "Instrument Sans", sans-serif;
-  --fuente-titulos: "Instrument Sans", sans-serif;
+  --borde-suave: #e5e5e5;
+  --borde-fuerte: #8c8c8c;
   --color-foco: #713bfa;
-  --espacio-1: 0.5rem;
-  --espacio-2: 1rem;
-  --espacio-3: 1.5rem;
-  --espacio-4: 2rem;
-  --radio: 0.75rem;
-  --ancho-contenido: 1280px;
+
+  /* Color: zonas oscuras (hero y pie) */
+  --fondo-oscuro: #141414;
+  --texto-sobre-oscuro: #ffffff;
+  --suave-sobre-oscuro: #b3b3b3;
+  --borde-sobre-oscuro: #3c3c3c;
+  --foco-sobre-oscuro: #9191ff;
+  --velo: rgb(0 0 0 / 65%);
+
+  /* PROVISIONAL: no existen en el código base, confirmar en Figma */
+  --acento-hover: #2e2e2e;
+  --error: #b3261e;
+  --deshabilitado: #9a9a9a;
+
+  /* Tipografía */
+  --fuente-base: var(--fuente-instrument-sans), "Instrument Sans", system-ui, sans-serif;
+  --texto-xs: 0.75rem;
+  --texto-s: 0.875rem;
+  --texto-m: 1rem;
+  --texto-l: 1.125rem;
+  --texto-xl: 1.5rem;
+  --texto-2xl: 2rem;
+  --peso-normal: 400;
+  --peso-medio: 500;
+  --peso-semi: 600;
+  --peso-fuerte: 700;
+
+  /* Espaciado */
+  --espacio-1: 0.25rem;
+  --espacio-2: 0.5rem;
+  --espacio-3: 0.75rem;
+  --espacio-4: 1rem;
+  --espacio-5: 1.5rem;
+  --espacio-6: 2rem;
+  --espacio-7: 3rem;
+  --espacio-8: 4rem;
+
+  /* Radios */
+  --radio-s: 0.375rem;
+  --radio-m: 0.5rem;
+  --radio-l: 0.75rem;
+  --radio-xl: 1rem;
+  --radio-pildora: 999px;
+
+  /* Medidas */
+  --borde-fino: 1px;
+  --borde-grueso: 2px;
+  --alto-control: 2.75rem;
+  --alto-navegacion: 4.5rem; /* 72 px, confirmado en Figma */
+  --ancho-contenido: 80rem;
+  --margen-total: 5rem; /* 80 px por lado en escritorio, confirmado */
+  --duracion: 160ms;
+  --capa-aviso: 20;
+}
+
+@media (max-width: 900px) {
+  :root {
+    --margen-total: 3rem;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --margen-total: 2.5rem;
+  }
 }
