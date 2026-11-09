@@ -59,7 +59,8 @@
   .menu-home {
     display: none;
     flex-basis: 100%;
-    padding: 24px 0;
+    padding: 16px 0 24px;
+    border-top: 1px solid var(--borde);
   }
 }
 @media (max-width: 640px) {
@@ -71,7 +72,21 @@
   }
 }
 @media (max-width: 640px) {
+  .taquilla .cabecera-home .menu-home.abierto .buscar-cabecera {
+    display: block;
+    order: 1;
+    padding: 8px 0;
+    border: 0;
+    background: transparent;
+    color: var(--tinta);
+    font-size: 14px;
+  }
+}
+@media (max-width: 640px) {
   .menu-home > a {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
     padding: 8px 0;
   }
 }
@@ -80,6 +95,12 @@
     margin: 8px 0 0;
     flex-wrap: wrap;
     justify-content: space-between;
+    gap: 12px;
+  }
+}
+@media (max-width: 640px) {
+  .acciones-home > button {
+    min-height: 44px;
   }
 }
 

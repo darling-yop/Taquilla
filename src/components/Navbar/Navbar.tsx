@@ -1,4 +1,6 @@
-import { useId, useRef, useState } from "react";
+"use client";
+
+import { useEffect, useId, useRef, useState } from "react";
 import Marca from "../Marca/Marca";
 import MenuMovil from "../MenuMovil/MenuMovil";
 import SelectorIdioma from "../SelectorIdioma/SelectorIdioma";
@@ -27,6 +29,26 @@ export default function Navbar({
   const boton = useRef<HTMLButtonElement>(null);
   const id = useId();
   const t = interfaz[idioma];
+
+  useEffect(() => {
+    const escritorio = window.matchMedia("(min-width: 641px)");
+    function cerrarEnEscritorio(evento: MediaQueryListEvent) {
+      if (evento.matches) setAbierto(false);
+    }
+
+    escritorio.addEventListener("change", cerrarEnEscritorio);
+    return () => escritorio.removeEventListener("change", cerrarEnEscritorio);
+  }, []);
+
+  function cerrarMenu() {
+    setAbierto(false);
+  }
+
+  function abrirCuenta(tipoCuenta: TipoCuenta) {
+    cerrarMenu();
+    onCuenta(tipoCuenta);
+  }
+
   return (
     <header
       className="cabecera-home"
@@ -39,12 +61,16 @@ export default function Navbar({
     >
       <div className="ancho-home fila-cabecera">
         <Marca nombre={nombre} tipo={tipo} />
-        <button className="ingreso-movil" onClick={() => onCuenta("ingresar")}>
+        <button
+          type="button"
+          className="ingreso-movil"
+          onClick={() => abrirCuenta("ingresar")}
+        >
           {t.ingresar}
         </button>
         <MenuMovil
           abierto={abierto}
-          onAlternar={() => setAbierto(!abierto)}
+          onAlternar={() => setAbierto((valor) => !valor)}
           menuId={id}
           botonRef={boton}
           textos={t}
@@ -54,14 +80,10 @@ export default function Navbar({
           className={`menu-home ${abierto ? "abierto" : ""}`}
           aria-label={t.navegacion}
         >
-          <a
-            href="#contenido"
-            aria-current="page"
-            onClick={() => setAbierto(false)}
-          >
+          <a href="#contenido" aria-current="page" onClick={cerrarMenu}>
             {t.inicio}
           </a>
-          <a href={destino} onClick={() => setAbierto(false)}>
+          <a href={destino} onClick={cerrarMenu}>
             {etiqueta}
           </a>
           <div className="acciones-home">
@@ -69,7 +91,7 @@ export default function Navbar({
               <a
                 className="buscar-cabecera"
                 href="#buscador-eventos"
-                onClick={() => setAbierto(false)}
+                onClick={cerrarMenu}
               >
                 {t.buscar}
               </a>
@@ -80,14 +102,16 @@ export default function Navbar({
               etiqueta={t.idioma}
             />
             <button
+              type="button"
               className="ingresar-home"
-              onClick={() => onCuenta("ingresar")}
+              onClick={() => abrirCuenta("ingresar")}
             >
               {t.ingresar}
             </button>
             <button
+              type="button"
               className="boton-home primario"
-              onClick={() => onCuenta("registro")}
+              onClick={() => abrirCuenta("registro")}
             >
               {t.registro}
             </button>
