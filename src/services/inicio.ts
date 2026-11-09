@@ -119,3 +119,10 @@ export function adaptarCategoriaInicio(valor: unknown): Categoria {
     eventos: cantidad,
   };
 }
+
+export function adaptarCiudadInicio(valor: unknown): string {
+  if (!esRegistro(valor)) {
+    throw new Error("La API devolvió una ciudad con una estructura no válida.");
+  }
+  return texto(valor, "nombre");
+}

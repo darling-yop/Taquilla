@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import LayoutPublico from "../components/LayoutPublico/LayoutPublico";
 import HeroTaquilla from "../components/HeroTaquilla/HeroTaquilla";
 import BuscadorEventos from "../components/BuscadorEventos/BuscadorEventos";
@@ -19,6 +20,7 @@ import {
 import type { Evento } from "../types";
 
 export default function HomePage() {
+  const router = useRouter();
   const { idioma } = usePreferencias();
   const en = idioma === "en";
   const { detalle, setDetalle, abrirCuenta } = useDetalle(idioma);
@@ -34,8 +36,22 @@ export default function HomePage() {
   const eventos = destacadosRecurso.datos ?? [];
   const categorias = categoriasRecurso.datos ?? [];
   const eventosManizales = manizalesRecurso.datos ?? [];
-  const { filtros, resultados, buscar, setFiltros, filtrarCategoria } =
+  const { filtros, resultados, setFiltros, filtrarCategoria } =
     useEventos(eventos);
+  function explorar(filtros: {
+    consulta?: string;
+    ciudad?: string;
+    fecha?: string;
+  }) {
+    const parametros = new URLSearchParams();
+    if (filtros.consulta?.trim()) {
+      parametros.set("q", filtros.consulta.trim());
+    }
+    if (filtros.ciudad) parametros.set("ciudad", filtros.ciudad);
+    if (filtros.fecha) parametros.set("fecha", filtros.fecha);
+    parametros.set("pagina", "1");
+    router.push(`/explorar?${parametros.toString()}`);
+  }
   function abrirEvento(evento: Evento) {
     setDetalle({
       titulo: evento.nombre,
@@ -56,7 +72,7 @@ export default function HomePage() {
   }
   return (
     <LayoutPublico
-      destino="#eventos"
+      destino="/explorar"
       etiqueta={en ? "Explore" : "Explorar"}
       descripcion={
         en
@@ -79,7 +95,7 @@ export default function HomePage() {
           key={JSON.stringify(filtros)}
           en={en}
           eventos={eventos}
-          onBuscar={buscar}
+          onBuscar={explorar}
           filtrosAplicados={filtros}
         />
       </HeroTaquilla>
@@ -114,7 +130,7 @@ export default function HomePage() {
           eventos={filtros ? resultados : eventos.slice(0, 4)}
           en={en}
           onAbrir={abrirEvento}
-          onVerTodos={() => buscar({})}
+          onVerTodos={() => router.push("/explorar")}
           cargando={destacadosRecurso.cargando}
           error={destacadosRecurso.error}
           onReintentar={destacadosRecurso.recargar}
@@ -131,7 +147,9 @@ export default function HomePage() {
             eventos={eventosManizales}
             en={en}
             onAbrir={abrirEvento}
-            onVerTodos={() => buscar({ ciudad: "Manizales" })}
+            onVerTodos={() =>
+              router.push("/explorar?ciudad=Manizales&pagina=1")
+            }
             cargando={manizalesRecurso.cargando}
             error={manizalesRecurso.error}
             onReintentar={manizalesRecurso.recargar}

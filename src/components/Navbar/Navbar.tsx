@@ -15,6 +15,8 @@ export default function Navbar({
   onCambiarIdioma,
   destino,
   etiqueta,
+  inicioDestino = "#contenido",
+  buscarDestino = "#buscador-eventos",
   onCuenta,
 }: {
   nombre: string;
@@ -23,6 +25,8 @@ export default function Navbar({
   onCambiarIdioma: (idioma: Idioma) => void;
   destino: string;
   etiqueta: string;
+  inicioDestino?: string;
+  buscarDestino?: string;
   onCuenta: (tipo: TipoCuenta) => void;
 }) {
   const [abierto, setAbierto] = useState(false);
@@ -80,7 +84,11 @@ export default function Navbar({
           className={`menu-home ${abierto ? "abierto" : ""}`}
           aria-label={t.navegacion}
         >
-          <a href="#contenido" aria-current="page" onClick={cerrarMenu}>
+          <a
+            href={inicioDestino}
+            aria-current={inicioDestino === "#contenido" ? "page" : undefined}
+            onClick={cerrarMenu}
+          >
             {t.inicio}
           </a>
           <a href={destino} onClick={cerrarMenu}>
@@ -90,7 +98,7 @@ export default function Navbar({
             {tipo === "taquilla" && (
               <a
                 className="buscar-cabecera"
-                href="#buscador-eventos"
+                href={buscarDestino}
                 onClick={cerrarMenu}
               >
                 {t.buscar}

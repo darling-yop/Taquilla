@@ -15,12 +15,16 @@ export default function LayoutPublico({
   descripcion,
   onCuenta,
   children,
+  inicioDestino = "#contenido",
+  buscarDestino = "#buscador-eventos",
 }: {
   destino: string;
   etiqueta: string;
   descripcion: string;
   onCuenta: (tipo: TipoCuenta) => void;
   children: ReactNode;
+  inicioDestino?: string;
+  buscarDestino?: string;
 }) {
   const { idioma, cambiarIdioma } = usePreferencias();
   const [cookiesAbiertas, setCookiesAbiertas] = useState(false);
@@ -46,6 +50,8 @@ export default function LayoutPublico({
         onCambiarIdioma={cambiarIdioma}
         destino={destino}
         etiqueta={etiqueta}
+        inicioDestino={inicioDestino}
+        buscarDestino={buscarDestino}
         onCuenta={onCuenta}
       />
       <main id="contenido" tabIndex={-1}>
@@ -58,6 +64,7 @@ export default function LayoutPublico({
         descripcion={descripcion}
         destino={destino}
         etiqueta={etiqueta}
+        inicioDestino={inicioDestino}
         onCuenta={onCuenta}
         onAbrirCookies={abrirCookies}
       />

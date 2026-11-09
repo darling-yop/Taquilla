@@ -9,6 +9,7 @@ export default function Footer({
   descripcion,
   destino,
   etiqueta,
+  inicioDestino = "#contenido",
   onCuenta,
   idioma,
   onAbrirCookies,
@@ -18,6 +19,7 @@ export default function Footer({
   descripcion: string;
   destino: string;
   etiqueta: string;
+  inicioDestino?: string;
   idioma: Idioma;
   onCuenta: (tipo: TipoCuenta) => void;
   onAbrirCookies: () => void;
@@ -33,7 +35,7 @@ export default function Footer({
           </div>
           <div>
             <h3>{t.explora}</h3>
-            <a href="#contenido">{t.inicio}</a>
+            <a href={inicioDestino}>{t.inicio}</a>
             <a href={destino}>{etiqueta}</a>
           </div>
           <div>

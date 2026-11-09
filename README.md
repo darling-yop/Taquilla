@@ -43,18 +43,24 @@ npm run typecheck
 ## Funcionalidades
 
 - Inicio bilingüe (español e inglés), con selector de idioma.
-- Búsqueda y filtros de eventos por texto, ciudad, fecha y categoría.
+- Catálogo en `/explorar` con búsqueda por texto y filtros por categoría,
+  ciudad y fecha.
+- Ordenamiento por fecha, precio o popularidad, paginación y filtros persistidos
+  en la URL (incluye compatibilidad con atrás/adelante del navegador).
 - Secciones de eventos destacados y de Manizales.
 - Diálogo con el detalle de cada evento y acceso a cuenta informativo.
 - Preferencias de cookies para consentimiento y persistencia opcional del idioma.
 - Diseño adaptable con estilos globales y variables de diseño.
 
 La página de inicio obtiene eventos destacados, categorías y eventos de
-Manizales desde la API. Las respuestas se adaptan en `src/services/inicio.ts`;
-las solicitudes HTTP y los estados de carga/reintento están en
-`src/services/api.ts` y `src/hooks/useRecurso.ts`. `src/data/catalogo.ts`
-contiene utilidades de formato y búsqueda. El flujo de compra y el acceso real a
-cuentas no están implementados.
+Manizales desde la API. El catálogo de `/explorar` consulta el listado paginado
+de eventos y opciones de categoría/ciudad; sus parámetros `q`, `categoria`,
+`ciudad`, `fecha`, `orden` y `pagina` se conservan en la URL. Las respuestas se
+adaptan en `src/services/inicio.ts`; las solicitudes HTTP y los estados de
+carga/reintento están en `src/services/api.ts`, `src/services/catalogoEventos.ts`
+y los hooks bajo `src/hooks/`. `src/data/catalogo.ts` contiene utilidades de
+formato y búsqueda. El flujo de compra y el acceso real a cuentas no están
+implementados.
 
 ## Estructura
 
