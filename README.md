@@ -51,7 +51,8 @@ npm run typecheck
   en la URL (incluye compatibilidad con atrás/adelante del navegador).
 - Secciones de eventos destacados y de Manizales.
 - Diálogo con el detalle de cada evento y acceso a cuenta informativo.
-- Preferencias de cookies para consentimiento y persistencia opcional del idioma.
+- Preferencias de cookies con aviso en la primera visita, aceptar/rechazar,
+  configuración de la cookie opcional de idioma y persistencia de la decisión.
 - Diseño adaptable con estilos globales y variables de diseño.
 
 La página de inicio obtiene eventos destacados, categorías y eventos de

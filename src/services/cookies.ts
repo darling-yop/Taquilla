@@ -21,4 +21,5 @@ export function guardarCookie(clave: string, valor: string) {
 
 export function borrarCookie(clave: string) {
   document.cookie = `${nombre(clave)}=; Path=/; Max-Age=0; SameSite=Lax`;
+  if (leerCookie(clave) !== null) throw new Error("cookie_no_borrada");
 }

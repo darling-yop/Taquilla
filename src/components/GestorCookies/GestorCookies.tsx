@@ -25,8 +25,8 @@ export default function GestorCookies({
     const guardado = guardarConsentimiento(permitir);
     if (guardado) {
       setMensaje(true);
+      onCerrar();
     }
-    onCerrar();
   }
   return (
     <>

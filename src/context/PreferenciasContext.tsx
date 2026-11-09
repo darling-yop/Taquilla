@@ -54,6 +54,7 @@ export function PreferenciasProvider({
   const textosCargando = !textosPorIdioma[idioma] && !erroresTextos[idioma];
   const errorTextos = Boolean(erroresTextos[idioma]);
   useEffect(() => {
+    let vigente = true;
     let falloAlLeer = false;
     let consentimientoLocal: Consentimiento = null;
     let idiomaLocal: Idioma | null = null;
@@ -98,13 +99,16 @@ export function PreferenciasProvider({
     } catch {
       falloAlLeer = true;
     }
-    const frame = window.requestAnimationFrame(() => {
+    queueMicrotask(() => {
+      if (!vigente) return;
       setConsentimiento(consentimientoFinal);
       setIdioma(idiomaFinal);
       setError(falloAlLeer);
       setPreferenciasCargadas(true);
     });
-    return () => window.cancelAnimationFrame(frame);
+    return () => {
+      vigente = false;
+    };
   }, [initialConsentimiento, initialIdioma]);
   useEffect(() => {
     const controlador = new AbortController();
@@ -189,6 +193,10 @@ export function PreferenciasProvider({
       }
     }
     setError(falloAlGuardar);
+    if (guardado) {
+      setConsentimiento(valor);
+      setPreferenciasCargadas(true);
+    }
     return guardado;
   }
   return (
