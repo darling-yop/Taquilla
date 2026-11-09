@@ -1,42 +1,20 @@
-/* Importación de la fuente (siempre primero en el archivo) */
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap");
 
 :root {
-  /* Colores base */
-  --color-fondo: #f8fafc;
-  --color-superficie: #ffffff;
-  --color-superficie-suave: #f1f1f1;      /* NUEVO: píldora del buscador */
-  --color-texto: #172033;
-  --color-texto-suave: #475569;
-
-  /* Marca */
-  --color-primario: #1d4ed8;
-  --color-primario-hover: #1e40af;
-  --color-sobre-primario: #ffffff;
-  --color-ink: #171717;                   /* NUEVO: negro de marca */
-  --color-ink-hover: #2e2e2e;             /* NUEVO */
-
-  /* Bordes */
-  --color-borde: #e2e8f0;                 /* CAMBIADO: antes #53575b (muy oscuro) */
-  --color-borde-fuerte: #94a3b8;          /* NUEVO: ES/EN e Ingresar */
-  --color-foco: #7c3aed;
-
-  /* Tipografía */
-  --fuente-texto: "Inter", system-ui, sans-serif;
-  --fuente-titulos: Georgia, "Times New Roman", serif;
-  --texto-pequeno: 0.875rem;
-  --texto-base: 1rem;
-  --texto-subtitulo: 1.5rem;
-  --texto-titulo: clamp(2rem, 1.5rem + 2vw, 3rem);
-  --interlineado: 1.6;
-
-  /* Espaciado y formas */
+  --fondo: #f7f7f7;
+  --superficie: #fff;
+  --tinta: #141414;
+  --suave: #595959;
+  --acento: #141414;
+  --sobre-acento: #fff;
+  --borde: #dedede;
+  --fuente-texto: "Instrument Sans", sans-serif;
+  --fuente-titulos: "Instrument Sans", sans-serif;
+  --color-foco: #713bfa;
   --espacio-1: 0.5rem;
   --espacio-2: 1rem;
   --espacio-3: 1.5rem;
   --espacio-4: 2rem;
-  --espacio-5: 3rem;
-  --radio: 0.5rem;
-  --ancho-contenido: 72rem;
-  --ancho-contenedor: min(100% - 2rem, 80rem); /* NUEVO: lo usa el Navbar */
+  --radio: 0.75rem;
+  --ancho-contenido: 1280px;
 }
