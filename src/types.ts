@@ -9,6 +9,8 @@ export type CategoriaEvento =
   | "Familiares";
 
 export interface Evento {
+  id: string;
+  slug: string;
   nombre: string;
   categoria: CategoriaEvento;
   etiqueta: string;
@@ -18,6 +20,14 @@ export interface Evento {
   ciudad: string;
   precio: number;
   arte: number;
+  color1?: string;
+  color2?: string;
+}
+
+export interface Categoria {
+  id: CategoriaEvento;
+  nombre: string;
+  eventos: number;
 }
 
 export interface FiltrosEventos {

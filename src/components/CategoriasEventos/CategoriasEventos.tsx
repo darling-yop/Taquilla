@@ -1,43 +1,76 @@
 import IconoEvento from "../IconoEvento/IconoEvento";
-import type { CategoriaEvento, FiltrosEventos } from "../../types";
+import { categoriasEn } from "../../data/catalogo";
+import type { Categoria, FiltrosEventos } from "../../types";
 import "./CategoriasEventos.css";
 export default function CategoriasEventos({
   categorias,
-  categoriasEn,
-  cantidades,
   filtros,
   en,
   filtrarCategoria,
+  cargando,
+  error,
+  onReintentar,
 }: {
-  categorias: CategoriaEvento[];
-  categoriasEn: string[];
-  cantidades: number[];
+  categorias: Categoria[];
   filtros: FiltrosEventos | null;
   en: boolean;
-  filtrarCategoria: (categoria: CategoriaEvento) => void;
+  filtrarCategoria: (categoria: Categoria["id"]) => void;
+  cargando: boolean;
+  error: Error | null;
+  onReintentar: () => void;
 }) {
   return (
     <nav
       className="categorias-eventos"
       aria-label={en ? "Event categories" : "Categorías de eventos"}
+      aria-busy={cargando}
     >
-      {categorias.map((categoria, i) => (
-        <button
-          key={categoria}
-          aria-pressed={filtros?.categoria === categoria}
-          onClick={() => filtrarCategoria(categoria)}
-        >
-          <span className="icono-categoria">
-            <IconoEvento tipo={categoria} />
+      {cargando && (
+        <>
+          <span className="solo-lectores" role="status">
+            {en ? "Loading event categories" : "Cargando categorías de eventos"}
           </span>
-          <span>
-            {en ? categoriasEn[i] : categoria}
-            <small>
-              {cantidades[i]} {en ? "events" : "eventos"}
-            </small>
-          </span>
-        </button>
-      ))}
+          {Array.from({ length: 6 }, (_, index) => (
+            <div
+              className="categoria-cargando"
+              key={`categoria-cargando-${index}`}
+              aria-hidden="true"
+            />
+          ))}
+        </>
+      )}
+      {!cargando &&
+        !error &&
+        categorias.map((categoria) => (
+          <button
+            type="button"
+            key={categoria.id}
+            aria-pressed={filtros?.categoria === categoria.id}
+            onClick={() => filtrarCategoria(categoria.id)}
+          >
+            <span className="icono-categoria">
+              <IconoEvento tipo={categoria.id} />
+            </span>
+            <span>
+              {en ? categoriasEn[categoria.id] : categoria.nombre}
+              <small>
+                {categoria.eventos} {en ? "events" : "eventos"}
+              </small>
+            </span>
+          </button>
+        ))}
+      {error && (
+        <div className="estado-categorias" role="alert">
+          <p>
+            {en
+              ? "We couldn't load event categories."
+              : "No pudimos cargar las categorías de eventos."}
+          </p>
+          <button type="button" onClick={onReintentar}>
+            {en ? "Try again" : "Reintentar"}
+          </button>
+        </div>
+      )}
     </nav>
   );
 }

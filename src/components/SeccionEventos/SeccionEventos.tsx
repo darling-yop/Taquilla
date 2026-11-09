@@ -10,6 +10,9 @@ export default function SeccionEventos({
   en,
   onAbrir,
   onVerTodos,
+  cargando = false,
+  error = null,
+  onReintentar,
 }: {
   id: string;
   titulo: string;
@@ -18,6 +21,9 @@ export default function SeccionEventos({
   en: boolean;
   onAbrir: (evento: Evento) => void;
   onVerTodos: () => void;
+  cargando?: boolean;
+  error?: Error | null;
+  onReintentar?: () => void;
 }) {
   return (
     <section
@@ -35,17 +41,51 @@ export default function SeccionEventos({
           <Flecha />
         </button>
       </div>
-      <div className="eventos-grid">
-        {eventos.map((evento) => (
-          <TarjetaEvento
-            key={evento.nombre}
-            evento={evento}
-            en={en}
-            onAbrir={onAbrir}
-          />
-        ))}
+      <div className="eventos-grid" aria-busy={cargando}>
+        {cargando && (
+          <>
+            <span className="solo-lectores" role="status">
+              {en ? "Loading events" : "Cargando eventos"}
+            </span>
+            {Array.from({ length: 4 }, (_, index) => (
+              <div
+                className="evento-cargando"
+                key={`evento-cargando-${index}`}
+                aria-hidden="true"
+              />
+            ))}
+          </>
+        )}
+        {!cargando &&
+          !error &&
+          eventos.map((evento) => (
+            <TarjetaEvento
+              key={evento.id}
+              evento={evento}
+              en={en}
+              onAbrir={onAbrir}
+            />
+          ))}
       </div>
-      {!eventos.length && (
+      {error && (
+        <div className="estado-eventos" role="alert">
+          <p>
+            {en
+              ? "We couldn't load events. Check your connection and try again."
+              : "No pudimos cargar los eventos. Revisa tu conexión e inténtalo de nuevo."}
+          </p>
+          {onReintentar && (
+            <button
+              type="button"
+              className="boton-home primario"
+              onClick={onReintentar}
+            >
+              {en ? "Try again" : "Reintentar"}
+            </button>
+          )}
+        </div>
+      )}
+      {!cargando && !error && !eventos.length && (
         <div className="sin-resultados">
           <h3>{en ? "No events found" : "No encontramos eventos"}</h3>
           <p>{en ? "Try another search." : "Prueba con otra búsqueda."}</p>

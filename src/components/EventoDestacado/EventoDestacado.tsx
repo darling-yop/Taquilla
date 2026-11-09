@@ -13,7 +13,11 @@ export default function EventoDestacado({
 }) {
   return (
     <div className="destacado-taquilla">
-      <AficheEvento variante={evento.arte} />
+      <AficheEvento
+        variante={evento.arte}
+        color1={evento.color1}
+        color2={evento.color2}
+      />
       <div className="ficha-destacado">
         <span className="etiqueta-evento">{en ? "Featured" : "Destacado"}</span>
         <h2>{evento.nombre}</h2>

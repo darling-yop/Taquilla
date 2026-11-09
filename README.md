@@ -49,10 +49,12 @@ npm run typecheck
 - Preferencias de cookies para consentimiento y persistencia opcional del idioma.
 - Diseño adaptable con estilos globales y variables de diseño.
 
-El catálogo usado por la página está en `src/data/catalogo.ts`. La migración
-conserva los datos y la lógica que ya existían. El servicio HTTP está definido
-en `src/services/api.ts`; la página de inicio actual no solicita eventos a ese
-servicio. El flujo de compra y el acceso real a cuentas no están implementados.
+La página de inicio obtiene eventos destacados, categorías y eventos de
+Manizales desde la API. Las respuestas se adaptan en `src/services/inicio.ts`;
+las solicitudes HTTP y los estados de carga/reintento están en
+`src/services/api.ts` y `src/hooks/useRecurso.ts`. `src/data/catalogo.ts`
+contiene utilidades de formato y búsqueda. El flujo de compra y el acceso real a
+cuentas no están implementados.
 
 ## Estructura
 

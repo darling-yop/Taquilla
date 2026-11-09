@@ -9,6 +9,25 @@
   gap: 64px;
   align-items: center;
 }
+.destacado-estado {
+  display: grid;
+  min-height: 220px;
+  align-content: center;
+  justify-items: start;
+  gap: 16px;
+  padding: 28px;
+  border: 1px solid #3c3c3c;
+  border-radius: 14px;
+  background: #1d1d1d;
+  color: #fff;
+}
+.destacado-estado p {
+  color: #d6d6d6;
+}
+.destacado-estado .boton-home {
+  min-height: 44px;
+  padding: 10px 16px;
+}
 .hero-taquilla h1 {
   font-size: clamp(36px, 3.5vw, 52px);
   font-weight: 600;
@@ -62,6 +81,11 @@
 @media (max-width: 640px) {
   .interior-taquilla {
     display: block;
+  }
+}
+@media (max-width: 640px) {
+  .destacado-estado {
+    display: none;
   }
 }
 @media (max-width: 640px) {

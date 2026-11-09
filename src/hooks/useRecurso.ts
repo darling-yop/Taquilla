@@ -1,14 +1,21 @@
 import { useEffect, useState } from "react";
 import { consultar } from "../services/api";
 
+interface RespuestaLista<T> {
+  datos: T[];
+}
+
 interface EstadoRecurso<T> {
   ruta: string | null;
-  datos: T | null;
+  datos: T[] | null;
   error: Error | null;
   cargando: boolean;
 }
 
-export function useRecurso<T = unknown>(ruta: string | null) {
+export function useRecurso<T>(
+  ruta: string | null,
+  adaptar: (valor: unknown) => T,
+) {
   const [estado, setEstado] = useState<EstadoRecurso<T>>({
     ruta: null,
     datos: null,
@@ -20,8 +27,14 @@ export function useRecurso<T = unknown>(ruta: string | null) {
     if (!ruta) return;
     const controlador = new AbortController();
     let vigente = true;
-    consultar<T>(ruta, { signal: controlador.signal })
-      .then((datos: T) => {
+    consultar<RespuestaLista<unknown>>(ruta, { signal: controlador.signal })
+      .then((respuesta) => {
+        if (!respuesta || !Array.isArray(respuesta.datos)) {
+          throw new Error(
+            "La respuesta de la API no contiene una lista de datos.",
+          );
+        }
+        const datos = respuesta.datos.map(adaptar);
         if (vigente) setEstado({ ruta, datos, error: null, cargando: false });
       })
       .catch((error: Error) => {
@@ -32,7 +45,7 @@ export function useRecurso<T = unknown>(ruta: string | null) {
       vigente = false;
       controlador.abort();
     };
-  }, [ruta, intento]);
+  }, [ruta, intento, adaptar]);
   const actual =
     estado.ruta === ruta
       ? estado

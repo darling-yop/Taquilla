@@ -10,19 +10,32 @@ import DialogoDetalle from "../components/DialogoDetalle/DialogoDetalle";
 import { usePreferencias } from "../context/PreferenciasContext";
 import { useDetalle } from "../hooks/useDetalle";
 import { useEventos } from "../hooks/useEventos";
-import { eventos, categorias, categoriasEn, dinero } from "../data/catalogo";
+import { dinero } from "../data/catalogo";
+import { useRecurso } from "../hooks/useRecurso";
+import {
+  adaptarCategoriaInicio,
+  adaptarEventoInicio,
+} from "../services/inicio";
 import type { Evento } from "../types";
 
 export default function HomePage() {
   const { idioma } = usePreferencias();
   const en = idioma === "en";
   const { detalle, setDetalle, abrirCuenta } = useDetalle(idioma);
+  const destacadosRecurso = useRecurso(
+    "/eventos/destacados",
+    adaptarEventoInicio,
+  );
+  const categoriasRecurso = useRecurso("/categorias", adaptarCategoriaInicio);
+  const manizalesRecurso = useRecurso(
+    "/eventos?ciudad=Manizales&porPagina=4",
+    adaptarEventoInicio,
+  );
+  const eventos = destacadosRecurso.datos ?? [];
+  const categorias = categoriasRecurso.datos ?? [];
+  const eventosManizales = manizalesRecurso.datos ?? [];
   const { filtros, resultados, buscar, setFiltros, filtrarCategoria } =
     useEventos(eventos);
-  const cantidades = categorias.map(
-    (categoria) =>
-      eventos.filter((evento) => evento.categoria === categoria).length,
-  );
   function abrirEvento(evento: Evento) {
     setDetalle({
       titulo: evento.nombre,
@@ -54,7 +67,10 @@ export default function HomePage() {
     >
       <HeroTaquilla
         en={en}
-        destacado={eventos[1]}
+        destacado={eventos[0] ?? null}
+        cargandoDestacado={destacadosRecurso.cargando}
+        errorDestacado={destacadosRecurso.error}
+        onReintentarDestacado={destacadosRecurso.recargar}
         abrirEvento={abrirEvento}
         setFiltros={setFiltros}
         filtrarCategoria={filtrarCategoria}
@@ -70,11 +86,12 @@ export default function HomePage() {
       <div className="ancho-home">
         <CategoriasEventos
           categorias={categorias}
-          categoriasEn={categoriasEn}
-          cantidades={cantidades}
           filtros={filtros}
           en={en}
           filtrarCategoria={filtrarCategoria}
+          cargando={categoriasRecurso.cargando}
+          error={categoriasRecurso.error}
+          onReintentar={categoriasRecurso.recargar}
         />
         <SeccionEventos
           id="eventos"
@@ -98,6 +115,9 @@ export default function HomePage() {
           en={en}
           onAbrir={abrirEvento}
           onVerTodos={() => buscar({})}
+          cargando={destacadosRecurso.cargando}
+          error={destacadosRecurso.error}
+          onReintentar={destacadosRecurso.recargar}
         />
         {!filtros && (
           <SeccionEventos
@@ -108,10 +128,13 @@ export default function HomePage() {
                 ? "Discover events in your city"
                 : "Descubre los eventos de tu ciudad"
             }
-            eventos={eventos.filter((evento) => evento.ciudad === "Manizales")}
+            eventos={eventosManizales}
             en={en}
             onAbrir={abrirEvento}
             onVerTodos={() => buscar({ ciudad: "Manizales" })}
+            cargando={manizalesRecurso.cargando}
+            error={manizalesRecurso.error}
+            onReintentar={manizalesRecurso.recargar}
           />
         )}
       </div>

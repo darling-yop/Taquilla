@@ -6,13 +6,19 @@ export default function HeroTaquilla({
   en,
   children,
   destacado,
+  cargandoDestacado,
+  errorDestacado,
+  onReintentarDestacado,
   abrirEvento,
   setFiltros,
   filtrarCategoria,
 }: {
   en: boolean;
   children: ReactNode;
-  destacado: Evento;
+  destacado: Evento | null;
+  cargandoDestacado: boolean;
+  errorDestacado: Error | null;
+  onReintentarDestacado: () => void;
   abrirEvento: (evento: Evento) => void;
   setFiltros: (filtros: FiltrosEventos | null) => void;
   filtrarCategoria: (categoria: CategoriaEvento) => void;
@@ -65,7 +71,40 @@ export default function HeroTaquilla({
             )}
           </div>
         </div>
-        <EventoDestacado evento={destacado} en={en} onAbrir={abrirEvento} />
+        {destacado ? (
+          <EventoDestacado evento={destacado} en={en} onAbrir={abrirEvento} />
+        ) : (
+          <div
+            className="destacado-estado"
+            role={errorDestacado ? "alert" : "status"}
+            aria-busy={cargandoDestacado}
+          >
+            {cargandoDestacado ? (
+              <p>{en ? "Loading featured events…" : "Cargando destacados…"}</p>
+            ) : errorDestacado ? (
+              <>
+                <p>
+                  {en
+                    ? "We couldn't load featured events."
+                    : "No pudimos cargar los eventos destacados."}
+                </p>
+                <button
+                  type="button"
+                  className="boton-home secundario"
+                  onClick={onReintentarDestacado}
+                >
+                  {en ? "Try again" : "Reintentar"}
+                </button>
+              </>
+            ) : (
+              <p>
+                {en
+                  ? "There are no featured events right now."
+                  : "No hay eventos destacados por ahora."}
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );

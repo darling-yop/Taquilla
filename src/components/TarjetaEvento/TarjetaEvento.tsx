@@ -1,6 +1,6 @@
 import AficheEvento from "../AficheEvento/AficheEvento";
 import IconoEvento from "../IconoEvento/IconoEvento";
-import { categorias, categoriasEn, dinero } from "../../data/catalogo";
+import { categoriasEn, dinero } from "../../data/catalogo";
 import type { Evento } from "../../types";
 import "./TarjetaEvento.css";
 export default function TarjetaEvento({
@@ -14,12 +14,14 @@ export default function TarjetaEvento({
 }) {
   return (
     <article className="tarjeta-evento">
-      <AficheEvento variante={evento.arte} />
+      <AficheEvento
+        variante={evento.arte}
+        color1={evento.color1}
+        color2={evento.color2}
+      />
       <div className="contenido-evento">
         <span className="etiqueta-evento">
-          {en
-            ? categoriasEn[categorias.indexOf(evento.categoria)]
-            : evento.etiqueta}
+          {en ? categoriasEn[evento.categoria] : evento.etiqueta}
         </span>
         <h3>{evento.nombre}</h3>
         <p>
