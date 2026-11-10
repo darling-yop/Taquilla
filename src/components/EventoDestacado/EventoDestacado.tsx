@@ -1,4 +1,5 @@
 import AficheEvento from "../AficheEvento/AficheEvento";
+import Button from "../Button/Button";
 import { dinero } from "../../data/catalogo";
 import { usePreferencias } from "../../context/PreferenciasContext";
 import type { Evento } from "../../types";
@@ -14,9 +15,7 @@ export default function EventoDestacado({
   return (
     <div className="destacado-taquilla">
       <AficheEvento
-        variante={evento.arte}
-        color1={evento.color1}
-        color2={evento.color2}
+        variante={4}
       />
       <div className="ficha-destacado">
         <span className="etiqueta-evento">
@@ -33,12 +32,12 @@ export default function EventoDestacado({
               dinero(evento.precio),
             )}
           </strong>
-          <button
-            className="boton-home primario"
+          <Button
+            variant="primary"
             onClick={() => onAbrir(evento)}
           >
             {textos.inicio.buscador.verEvento}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

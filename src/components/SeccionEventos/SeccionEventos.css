@@ -1,36 +1,45 @@
 .seccion-eventos {
-  margin-bottom: 48px;
+  margin-bottom: var(--espacio-seccion-home);
 }
 .seccion-eventos .titulo-seccion {
+  display: flex;
   align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--espacio-4);
+  margin-bottom: var(--espacio-4);
 }
 .seccion-eventos h2 {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: var(--peso-semi);
   letter-spacing: -0.025em;
   margin-bottom: 6px;
 }
 .seccion-eventos .titulo-seccion p {
-  color: #595959;
-  font-size: 16px;
+  color: var(--suave);
+  font-size: 13px;
 }
 .eventos-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 24px;
+  gap: var(--espacio-grid-home);
 }
 .sin-resultados {
   padding: 48px;
-  border: 1px solid #dedede;
-  border-radius: 12px;
-  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-l);
+  background: var(--superficie);
   text-align: center;
 }
 .evento-cargando {
-  min-height: 330px;
-  border: 1px solid #dedede;
-  border-radius: 12px;
-  background: linear-gradient(110deg, #f0f0f0 30%, #fafafa 45%, #f0f0f0 60%);
+  min-height: 280px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-l);
+  background: linear-gradient(
+    110deg,
+    var(--superficie-suave) 30%,
+    var(--superficie) 45%,
+    var(--superficie-suave) 60%
+  );
   background-size: 200% 100%;
   animation: carga-evento 1.4s ease-in-out infinite;
 }
@@ -41,14 +50,13 @@
   flex-wrap: wrap;
   gap: 16px;
   padding: 24px;
-  border: 1px solid #dedede;
-  border-radius: 12px;
-  background: #fff;
-  color: #595959;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-l);
+  background: var(--superficie);
+  color: var(--suave);
 }
-.estado-eventos .boton-home {
-  min-height: 44px;
-  padding: 10px 16px;
+.estado-eventos .ui-button {
+  min-height: 36px;
 }
 @keyframes carga-evento {
   to {
@@ -58,7 +66,7 @@
 .sin-resultados p {
   margin: 12px 0 24px;
 }
-@media (max-width: 1100px) {
+@media (max-width: 760px) {
   .eventos-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -66,7 +74,7 @@
 @media (max-width: 640px) {
   .eventos-grid {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: var(--espacio-4);
   }
 }
 @media (max-width: 640px) {

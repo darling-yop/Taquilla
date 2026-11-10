@@ -5,7 +5,7 @@
   --superficie-suave: #f0f0f0;
   --superficie-hover: #ededed;
   --tinta: #141414;
-  --suave: #595959;
+  --suave: #6b6b6b;
   --acento: #141414;
   --sobre-acento: #ffffff;
   --boton-primario-fondo: var(--acento);
@@ -14,7 +14,7 @@
   --chip-activo-texto: var(--tinta);
   --badge-fondo: var(--superficie-suave);
   --badge-texto: var(--suave);
-  --borde: #dedede;
+  --borde: #e5e5e5;
   --borde-suave: #e5e5e5;
   --borde-fuerte: #8c8c8c;
   --color-foco: #713bfa;
@@ -63,6 +63,8 @@
   --espacio-toolbar: 1.5rem;
   --espacio-footer: 4rem;
   --espacio-cookie: 1.5rem;
+  --espacio-seccion-home: 3.5rem;
+  --espacio-grid-home: 1rem;
 
   /* Radios */
   --radio-s: 0.375rem;
@@ -70,6 +72,7 @@
   --radio-l: 0.75rem;
   --radio-xl: 1rem;
   --radio-pildora: 999px;
+  --sombra-tarjeta: 0 2px 8px rgb(20 20 20 / 4%);
 
   /* Medidas */
   --borde-fino: 1px;

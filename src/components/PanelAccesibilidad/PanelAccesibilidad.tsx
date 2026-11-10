@@ -119,7 +119,7 @@ export default function PanelAccesibilidad({
     <>
       <Button
         variant="icon"
-        ref={botonAbrir}
+        buttonRef={botonAbrir}
         aria-label={t.abrir}
         aria-haspopup="dialog"
         aria-expanded={abierto}
@@ -128,8 +128,8 @@ export default function PanelAccesibilidad({
       >
         <svg
           viewBox="0 0 24 24"
-          width="18"
-          height="18"
+          width="20"
+          height="20"
           fill="none"
           stroke="currentColor"
           strokeWidth="1.8"
@@ -137,8 +137,8 @@ export default function PanelAccesibilidad({
           strokeLinejoin="round"
           aria-hidden="true"
         >
-          <circle cx="12" cy="6.5" r="2" />
-          <path d="M5 10.5h14M12 11v4m0 0-3.5 4M12 15l3.5 4" />
+          <circle cx="12" cy="5.5" r="2" />
+          <path d="M4.5 9.5h15M12 9.5v5.5m0 0L7.5 20m4.5-5 4.5 5" />
         </svg>
       </Button>
       <dialog

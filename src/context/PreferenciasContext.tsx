@@ -17,6 +17,7 @@ interface Preferencias {
   consentimiento: Consentimiento;
   preferenciasCargadas: boolean;
   guardarConsentimiento: (permitir: boolean) => boolean;
+  restablecerConsentimiento: () => boolean;
   error: boolean;
   textos: TextosAplicacion;
   textosCargando: boolean;
@@ -65,7 +66,13 @@ export function PreferenciasProvider({
       );
       if (valor === "aceptado" || valor === "rechazado") {
         consentimientoLocal = valor;
-      } else {
+      }
+    } catch {
+      falloAlLeer = true;
+    }
+
+    try {
+      if (!consentimientoLocal) {
         const consentimientoCookie = leerCookie("consentimiento");
         if (
           consentimientoCookie === "aceptado" ||
@@ -74,12 +81,23 @@ export function PreferenciasProvider({
           consentimientoLocal = consentimientoCookie;
         }
       }
+    } catch {
+      falloAlLeer = true;
+    }
+
+    try {
       const idiomaGuardado = window.localStorage.getItem(
         `${proyecto.id}_idioma`,
       );
       if (idiomaGuardado === "en" || idiomaGuardado === "es") {
         idiomaLocal = idiomaGuardado;
-      } else {
+      }
+    } catch {
+      falloAlLeer = true;
+    }
+
+    try {
+      if (!idiomaLocal) {
         const idiomaCookie = leerCookie("idioma");
         if (idiomaCookie === "en" || idiomaCookie === "es") {
           idiomaLocal = idiomaCookie;
@@ -222,6 +240,30 @@ export function PreferenciasProvider({
     }
     return guardado;
   }
+
+  function restablecerConsentimiento() {
+    let falloAlRestablecer = false;
+    try {
+      window.localStorage.removeItem(`${proyecto.id}_consentimiento`);
+    } catch {
+      falloAlRestablecer = true;
+    }
+    try {
+      borrarCookie("consentimiento");
+    } catch {
+      falloAlRestablecer = true;
+    }
+    try {
+      borrarCookie("idioma");
+    } catch {
+      falloAlRestablecer = true;
+    }
+    setConsentimiento(null);
+    setPreferenciasCargadas(true);
+    setError(falloAlRestablecer);
+    return !falloAlRestablecer;
+  }
+
   return (
     <PreferenciasContext.Provider
       value={{
@@ -230,6 +272,7 @@ export function PreferenciasProvider({
         consentimiento,
         preferenciasCargadas,
         guardarConsentimiento,
+        restablecerConsentimiento,
         error,
         textos,
         textosCargando,

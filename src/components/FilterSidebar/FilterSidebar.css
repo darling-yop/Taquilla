@@ -18,18 +18,11 @@
   font-size: 15px;
   font-weight: 600;
 }
-.filter-sidebar-header button {
+.filter-sidebar-header .ui-button {
   min-height: 32px;
-  padding: 4px 6px;
-  border: 0;
-  background: transparent;
+  padding: 0 8px;
   color: var(--suave);
-  cursor: pointer;
-  font: inherit;
   font-size: 11px;
-}
-.filter-sidebar-header button:hover {
-  text-decoration: underline;
 }
 .filter-sidebar-section {
   min-width: 0;
@@ -70,18 +63,13 @@
   flex-wrap: wrap;
   gap: var(--espacio-2);
 }
-.date-pills button {
+.date-pills .date-pill {
   min-height: 28px;
-  padding: 4px 9px;
-  border: 1px solid var(--borde);
-  border-radius: 999px;
-  background: var(--superficie);
-  color: var(--tinta);
-  cursor: pointer;
-  font: inherit;
+  padding: 0 9px;
+  border-radius: var(--radio-pildora);
   font-size: 10px;
 }
-.date-pills button[aria-pressed="true"] {
+.date-pills .date-pill[aria-pressed="true"] {
   border-color: var(--acento);
   background: var(--boton-primario-fondo);
   color: var(--boton-primario-texto);

@@ -6,6 +6,7 @@ import type { CategoriaEvento } from "../../types";
 import type { Idioma } from "../../data/interfaz";
 import type { TextosAplicacion } from "../../data/textos";
 import { categoriasMock } from "../../data/eventosMock";
+import Button from "../Button/Button";
 import "./FilterSidebar.css";
 
 const ciudades = ["Manizales", "Pereira", "Bogotá", "Medellín"];
@@ -65,9 +66,9 @@ export default function FilterSidebar({
     <aside className="filter-sidebar" aria-label={textos.filtroAria}>
       <div className="filter-sidebar-header">
         <h2>{textos.tituloFiltros}</h2>
-        <button type="button" onClick={onLimpiar}>
+        <Button variant="outline" type="button" onClick={onLimpiar}>
           {textos.limpiar}
-        </button>
+        </Button>
       </div>
 
       <fieldset className="filter-sidebar-section category-section">
@@ -99,14 +100,16 @@ export default function FilterSidebar({
               ["personalizado", textos.elegirFechas],
             ] as const
           ).map(([valor, etiqueta]) => (
-            <button
+            <Button
+              variant="outline"
               type="button"
+              className="date-pill"
               key={valor}
               aria-pressed={periodo === valor}
               onClick={() => onPeriodo(periodo === valor ? "" : valor)}
             >
               {etiqueta}
-            </button>
+            </Button>
           ))}
         </div>
       </fieldset>

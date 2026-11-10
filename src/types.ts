@@ -20,8 +20,6 @@ export interface Evento {
   ciudad: string;
   precio: number;
   arte: number;
-  color1?: string;
-  color2?: string;
 }
 
 export interface Categoria {

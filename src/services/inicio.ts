@@ -27,13 +27,6 @@ function texto(registro: Registro, clave: string): string {
   return valor;
 }
 
-function colorAfiche(afiche: Registro, clave: string): string | undefined {
-  const valor = afiche[clave];
-  return typeof valor === "string" && /^#[\da-f]{6}$/i.test(valor)
-    ? valor
-    : undefined;
-}
-
 function categoriaValida(valor: string): CategoriaEvento {
   const categoria = categoriasPorId[valor.toLowerCase()];
   if (!categoria) {
@@ -66,7 +59,6 @@ export function adaptarEventoInicio(valor: unknown): Evento {
   }
 
   const recinto = valor.recinto;
-  const afiche = esRegistro(valor.afiche) ? valor.afiche : {};
   const fecha = texto(valor, "fecha");
   const fechaEvento = new Date(fecha);
   const horario = new Intl.DateTimeFormat("es-CO", {
@@ -95,8 +87,6 @@ export function adaptarEventoInicio(valor: unknown): Evento {
     ciudad: texto(recinto, "ciudad"),
     precio,
     arte: 0,
-    color1: colorAfiche(afiche, "color1"),
-    color2: colorAfiche(afiche, "color2"),
   };
 }
 

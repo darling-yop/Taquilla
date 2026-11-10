@@ -1,4 +1,5 @@
 import EventoDestacado from "../EventoDestacado/EventoDestacado";
+import Button from "../Button/Button";
 import type { ReactNode } from "react";
 import type { Evento, FiltrosEventos, CategoriaEvento } from "../../types";
 import { usePreferencias } from "../../context/PreferenciasContext";
@@ -36,6 +37,8 @@ export default function HeroTaquilla({
             {["Salsa", "Stand-up", "Fútbol", "Festivales de fin de año"].map(
               (valor, i) => (
                 <button
+                  type="button"
+                  className="popular-filter"
                   key={valor}
                   onClick={() =>
                     i === 0
@@ -72,13 +75,12 @@ export default function HeroTaquilla({
             ) : errorDestacado ? (
               <>
                 <p>{textos.inicio.errorDestacados}</p>
-                <button
-                  type="button"
-                  className="boton-home secundario"
+                <Button
+                  variant="outline"
                   onClick={onReintentarDestacado}
                 >
                   {textos.comun.reintentar}
-                </button>
+                </Button>
               </>
             ) : (
               <p>{textos.inicio.sinDestacados}</p>

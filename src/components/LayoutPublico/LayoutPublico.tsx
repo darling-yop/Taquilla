@@ -1,3 +1,5 @@
+"use client";
+
 import { useRef, useState } from "react";
 import { proyecto } from "../../config/proyecto";
 import { usePreferencias } from "../../context/PreferenciasContext";
@@ -15,7 +17,6 @@ export default function LayoutPublico({
   onCuenta,
   children,
   inicioDestino = "#contenido",
-  buscarDestino = "#buscador-eventos",
 }: {
   destino: string;
   etiqueta: string;
@@ -23,7 +24,6 @@ export default function LayoutPublico({
   onCuenta: (tipo: TipoCuenta) => void;
   children: ReactNode;
   inicioDestino?: string;
-  buscarDestino?: string;
 }) {
   const {
     idioma,
@@ -32,6 +32,7 @@ export default function LayoutPublico({
     errorTextos,
     recargarTextos,
     consentimiento,
+    restablecerConsentimiento,
   } = usePreferencias();
   const [cookiesAbiertas, setCookiesAbiertas] = useState(false);
   const [permitirCookies, setPermitirCookies] = useState(false);
@@ -47,6 +48,10 @@ export default function LayoutPublico({
   function cerrarCookies() {
     setCookiesAbiertas(false);
     disparador.current?.focus();
+  }
+  function configurarCookies() {
+    setCookiesAbiertas(false);
+    restablecerConsentimiento();
   }
   return (
     <div className={`landing ${proyecto.id}`}>
@@ -68,7 +73,6 @@ export default function LayoutPublico({
         destino={destino}
         etiqueta={etiqueta}
         inicioDestino={inicioDestino}
-        buscarDestino={buscarDestino}
         onCuenta={onCuenta}
       />
       <main id="contenido" tabIndex={-1}>
@@ -83,6 +87,7 @@ export default function LayoutPublico({
         inicioDestino={inicioDestino}
         onCuenta={onCuenta}
         onAbrirCookies={abrirCookies}
+        onConfigurarCookies={configurarCookies}
       />
       <GestorCookies
         abierto={cookiesAbiertas}

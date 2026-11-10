@@ -2,11 +2,7 @@
   position: relative;
   height: 176px;
   overflow: hidden;
-  background: linear-gradient(
-    135deg,
-    var(--afiche-color-1, #a49086),
-    var(--afiche-color-2, #554650)
-  );
+  background: linear-gradient(135deg, #a49086, #554650);
 }
 .arte-evento::before,
 .arte-evento::after {
@@ -42,12 +38,6 @@
 }
 .arte-evento-5 {
   background: linear-gradient(135deg, #222126, #a29ac8);
-}
-.arte-evento-6 {
-  background: linear-gradient(135deg, #ba829a, #b8b084);
-}
-.arte-evento-7 {
-  background: linear-gradient(135deg, #21383c, #8cabe0);
 }
 @media (max-width: 640px) {
   .tarjeta-evento .arte-evento {

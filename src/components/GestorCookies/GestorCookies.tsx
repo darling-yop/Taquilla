@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { usePreferencias } from "../../context/PreferenciasContext";
 import BannerCookies from "../BannerCookies/BannerCookies";

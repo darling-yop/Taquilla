@@ -49,6 +49,24 @@
   color: var(--suave);
   font-size: 12px;
 }
+.pie-creditos-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-4);
+}
+.pie-creditos-acciones .enlace-home {
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: var(--suave);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.pie-creditos-acciones .enlace-home:hover {
+  color: var(--texto-sobre-oscuro, var(--tinta));
+}
 .pie-creditos .cookies > .cookies-boton {
   background: transparent;
   color: var(--suave);
@@ -88,6 +106,9 @@
   .pie-creditos {
     flex-direction: column;
     align-items: flex-start;
+  }
+  .pie-creditos-acciones {
+    gap: var(--espacio-3);
   }
 }
 .taquilla .pie-home {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Marca from "../Marca/Marca";
 import MenuMovil from "../MenuMovil/MenuMovil";
 import SelectorIdioma from "../SelectorIdioma/SelectorIdioma";
@@ -19,7 +20,6 @@ export default function Navbar({
   destino,
   etiqueta,
   inicioDestino = "#contenido",
-  buscarDestino = "#buscador-eventos",
   onCuenta,
 }: {
   nombre: string;
@@ -30,10 +30,11 @@ export default function Navbar({
   destino: string;
   etiqueta: string;
   inicioDestino?: string;
-  buscarDestino?: string;
   onCuenta: (tipo: TipoCuenta) => void;
 }) {
+  const router = useRouter();
   const [abierto, setAbierto] = useState(false);
+  const [consulta, setConsulta] = useState("");
   const boton = useRef<HTMLButtonElement>(null);
   const id = useId();
   const t = textos.interfaz;
@@ -55,6 +56,18 @@ export default function Navbar({
   function abrirCuenta(tipoCuenta: TipoCuenta) {
     cerrarMenu();
     onCuenta(tipoCuenta);
+  }
+
+  function buscar(evento: React.FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    const parametros = new URLSearchParams(window.location.search);
+    const valor = consulta.trim();
+    if (valor) parametros.set("q", valor);
+    else parametros.delete("q");
+    parametros.set("filtros", "personalizados");
+    parametros.set("pagina", "1");
+    router.push(`/explorar?${parametros.toString()}`);
+    cerrarMenu();
   }
 
   return (
@@ -101,26 +114,41 @@ export default function Navbar({
           </a>
           <div className="acciones-home">
             {tipo === "taquilla" && (
-              <a
+              <form
                 className="buscar-cabecera"
-                href={buscarDestino}
-                onClick={cerrarMenu}
+                role="search"
+                aria-label={t.headerBuscar}
+                onSubmit={buscar}
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  width="16"
-                  height="16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  aria-hidden="true"
+                <Button
+                  variant="icon"
+                  className="buscar-cabecera-submit"
+                  type="submit"
+                  aria-label={t.headerBuscar}
+                  title={t.headerBuscar}
                 >
-                  <circle cx="10.8" cy="10.8" r="6.8" />
-                  <path d="m16 16 4 4" />
-                </svg>
-                <span>{t.headerBuscar}</span>
-              </a>
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="10.8" cy="10.8" r="6.8" />
+                    <path d="m16 16 4 4" />
+                  </svg>
+                </Button>
+                <input
+                  type="search"
+                  aria-label={t.headerBuscar}
+                  placeholder={t.headerBuscar}
+                  value={consulta}
+                  onChange={(evento) => setConsulta(evento.target.value)}
+                />
+              </form>
             )}
             <PanelAccesibilidad textos={textos.interfaz} />
             <SelectorIdioma

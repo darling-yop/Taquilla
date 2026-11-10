@@ -17,6 +17,7 @@ import type { EventoListado } from "../../data/eventosMock";
 import type { EventSort } from "../../components/SortSelect/SortSelect";
 import "./ExplorarPage.css";
 import { formatearTexto } from "../../services/textos";
+import { normalizar } from "../../data/catalogo";
 
 const categoriasPredeterminadas = ["conciertos", "festivales"];
 const categoriasValidas = categoriasMock.map(({ id }) => id.toLowerCase());
@@ -48,6 +49,9 @@ export default function ExplorarPage() {
   const en = idioma === "en";
   const { detalle, setDetalle, abrirCuenta } = useDetalle(textos);
   const esPersonalizado = parametros.get("filtros") === "personalizados";
+  const consulta = (parametros.get("q") ?? "").trim();
+  const consultaNormalizada = normalizar(consulta);
+  const fecha = parametros.get("fecha") ?? "";
   const categorias = useMemo(
     () =>
       parametros.has("categoria")
@@ -94,6 +98,17 @@ export default function ExplorarPage() {
       eventosMock
         .filter(
           (evento) =>
+            (!consultaNormalizada ||
+              [
+                evento.id,
+                evento.nombre,
+                evento.categoria,
+                evento.lugar,
+                evento.ciudad,
+              ].some((valor) =>
+                normalizar(valor).includes(consultaNormalizada),
+              )) &&
+            (!fecha || evento.fecha === fecha) &&
             (categorias.length === 0 ||
               categorias.includes(evento.categoria.toLowerCase())) &&
             (!ciudad || evento.ciudad === ciudad) &&
@@ -105,7 +120,7 @@ export default function ExplorarPage() {
           if (orden === "precio-desc") return b.precio - a.precio;
           return a.fecha.localeCompare(b.fecha);
         }),
-    [categorias, ciudad, orden, precioMinimo, precioMaximo],
+    [categorias, ciudad, fecha, orden, precioMinimo, precioMaximo, consultaNormalizada],
   );
 
   function cambiarFiltros(cambios: Record<string, string>) {
@@ -177,6 +192,27 @@ export default function ExplorarPage() {
     maximumFractionDigits: 0,
   });
   const chips = [
+    ...(consulta
+      ? [
+          {
+            id: "busqueda",
+            label: consulta,
+            onRemove: () => cambiarFiltros({ q: "" }),
+          },
+        ]
+      : []),
+    ...(fecha
+      ? [
+          {
+            id: "fecha",
+            label: new Intl.DateTimeFormat(en ? "en-CO" : "es-CO", {
+              dateStyle: "medium",
+              timeZone: "America/Bogota",
+            }).format(new Date(fecha)),
+            onRemove: () => cambiarFiltros({ fecha: "" }),
+          },
+        ]
+      : []),
     ...categorias.map((categoria) => ({
       id: `categoria-${categoria}`,
       label:
@@ -231,7 +267,6 @@ export default function ExplorarPage() {
     <LayoutPublico
       destino="/explorar"
       inicioDestino="/"
-      buscarDestino="#resultados-explorar"
       etiqueta={textos.interfaz.explora}
       descripcion={textos.pie.descripcion}
       onCuenta={abrirCuenta}

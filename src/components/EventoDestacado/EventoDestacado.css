@@ -1,7 +1,7 @@
 .destacado-taquilla {
   position: relative;
-  min-height: 440px;
-  border-radius: 14px;
+  min-height: clamp(280px, 28vw, 360px);
+  border-radius: var(--radio-l);
   overflow: hidden;
 }
 .destacado-taquilla > .arte-evento {
@@ -20,20 +20,29 @@
   bottom: 26px;
   left: 20px;
   right: 20px;
-  background: #fff;
-  color: #141414;
-  padding: 20px;
-  border-radius: 12px;
+  background: var(--superficie);
+  color: var(--tinta);
+  padding: 16px;
+  border-radius: var(--radio-l);
+  box-shadow: var(--sombra-tarjeta);
+}
+.ficha-destacado .etiqueta-evento {
+  display: inline-flex;
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: var(--badge-fondo);
+  color: var(--badge-texto);
+  font-size: 10px;
 }
 .ficha-destacado h2 {
-  font-size: 24px;
-  margin: 12px 0;
-  font-weight: 600;
+  font-size: clamp(18px, 1.7vw, 22px);
+  margin: 8px 0;
+  font-weight: var(--peso-semi);
   letter-spacing: -0.03em;
 }
 .ficha-destacado > p {
-  color: #595959;
-  font-size: 14px;
+  color: var(--suave);
+  font-size: 12px;
 }
 .ficha-destacado > div {
   display: flex;
@@ -42,7 +51,12 @@
   gap: 12px;
 }
 .ficha-destacado strong {
-  font-weight: 500;
+  font-weight: var(--peso-medio);
+  font-size: 13px;
+}
+.ficha-destacado .ui-button {
+  min-height: 36px;
+  padding-inline: 14px;
 }
 @media (max-width: 640px) {
   .destacado-taquilla {

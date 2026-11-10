@@ -1,4 +1,5 @@
 import TarjetaEvento from "../TarjetaEvento/TarjetaEvento";
+import Button from "../Button/Button";
 import { usePreferencias } from "../../context/PreferenciasContext";
 import type { Evento } from "../../types";
 import "./SeccionEventos.css";
@@ -35,6 +36,9 @@ export default function SeccionEventos({
           <h2 id={`${id}-titulo`}>{titulo}</h2>
           <p role="status">{descripcion}</p>
         </div>
+        <Button variant="link" href="/explorar">
+          {textos.pie.eventos}
+        </Button>
       </div>
       <div className="eventos-grid" aria-busy={cargando}>
         {cargando && (
@@ -66,13 +70,13 @@ export default function SeccionEventos({
         <div className="estado-eventos" role="alert">
           <p>{textos.comun.errorEventos}</p>
           {onReintentar && (
-            <button
+            <Button
+              variant="primary"
               type="button"
-              className="boton-home primario"
               onClick={onReintentar}
             >
               {textos.comun.reintentar}
-            </button>
+            </Button>
           )}
         </div>
       )}

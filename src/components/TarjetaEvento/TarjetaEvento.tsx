@@ -1,5 +1,6 @@
 import AficheEvento from "../AficheEvento/AficheEvento";
 import IconoEvento from "../IconoEvento/IconoEvento";
+import Button from "../Button/Button";
 import { dinero } from "../../data/catalogo";
 import { usePreferencias } from "../../context/PreferenciasContext";
 import type { Evento } from "../../types";
@@ -18,8 +19,6 @@ export default function TarjetaEvento({
     <article className="tarjeta-evento">
       <AficheEvento
         variante={evento.arte}
-        color1={evento.color1}
-        color2={evento.color2}
       />
       <div className="contenido-evento">
         <span className="etiqueta-evento">
@@ -45,13 +44,13 @@ export default function TarjetaEvento({
             <small>{textos.comun.desde}</small>
             <strong>{dinero(evento.precio)}</strong>
           </div>
-          <button
-            className="boton-home secundario"
+          <Button
+            variant="outline"
             aria-label={`${textos.comun.verEvento}: ${evento.nombre}`}
             onClick={() => onAbrir(evento)}
           >
             {textos.comun.verEvento}
-          </button>
+          </Button>
         </div>
       </div>
     </article>

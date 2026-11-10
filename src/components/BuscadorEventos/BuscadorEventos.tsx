@@ -1,5 +1,6 @@
 import { useState } from "react";
 import IconoEvento from "../IconoEvento/IconoEvento";
+import Button from "../Button/Button";
 import { usePreferencias } from "../../context/PreferenciasContext";
 import type { FiltrosEventos, Evento } from "../../types";
 import "./BuscadorEventos.css";
@@ -78,9 +79,9 @@ export default function BuscadorEventos({
           </select>
         </span>
       </label>
-      <button className="boton-home primario" type="submit">
+      <Button variant="primary" type="submit">
         {textos.inicio.buscador.buscar}
-      </button>
+      </Button>
     </form>
   );
 }

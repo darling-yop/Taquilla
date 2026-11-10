@@ -1,13 +1,24 @@
 .hero-taquilla {
-  color: #fff;
-  background: #141414;
-  padding: 72px 0;
+  color: var(--texto-sobre-oscuro);
+  background: var(--fondo-oscuro);
+  padding: clamp(40px, 5vw, 64px) 0;
 }
 .interior-taquilla {
   display: grid;
-  grid-template-columns: 1.53fr 1fr;
-  gap: 64px;
+  grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.9fr);
+  gap: clamp(32px, 5vw, 64px);
   align-items: center;
+}
+.hero-taquilla .etiqueta-evento {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radio-pildora);
+  background: var(--superficie);
+  color: var(--tinta);
+  font-size: 11px;
+  font-weight: var(--peso-medio);
 }
 .destacado-estado {
   display: grid;
@@ -16,66 +27,76 @@
   justify-items: start;
   gap: 16px;
   padding: 28px;
-  border: 1px solid #3c3c3c;
-  border-radius: 14px;
+  border: 1px solid var(--borde-sobre-oscuro);
+  border-radius: var(--radio-l);
   background: #1d1d1d;
-  color: #fff;
+  color: var(--texto-sobre-oscuro);
 }
 .destacado-estado p {
-  color: #d6d6d6;
+  color: var(--suave-sobre-oscuro);
 }
-.destacado-estado .boton-home {
-  min-height: 44px;
-  padding: 10px 16px;
+.destacado-estado .ui-button {
+  min-height: 36px;
 }
 .hero-taquilla h1 {
-  font-size: clamp(36px, 3.5vw, 52px);
-  font-weight: 600;
-  line-height: 1.1;
+  max-width: 760px;
+  font-size: clamp(36px, 4vw, 52px);
+  font-weight: var(--peso-fuerte);
+  line-height: 1.05;
   letter-spacing: -0.035em;
-  margin: 26px 0;
+  margin: 20px 0 16px;
   text-wrap: initial;
 }
 .hero-taquilla .interior-taquilla > div > p {
-  color: #b3b3b3;
-  font-size: 18px;
-  line-height: 1.6;
-  margin-bottom: 26px;
+  max-width: 650px;
+  color: var(--suave-sobre-oscuro);
+  font-size: 16px;
+  line-height: 1.55;
+  margin-bottom: 22px;
 }
 .populares {
   display: flex;
-  gap: 16px;
+  gap: 14px;
   align-items: center;
   flex-wrap: wrap;
   margin-top: 20px;
-  font-size: 13px;
+  font-size: 12px;
 }
 .populares > span {
   color: #b3b3b3;
 }
 .populares button {
   border: 0;
-  color: #fff;
+  color: var(--texto-sobre-oscuro);
   background: none;
   padding: 4px 0;
-  font-size: 13px;
+  font-size: 12px;
+}
+.populares .popular-filter {
+  min-width: 0;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--texto-sobre-oscuro);
+  font: inherit;
+  font-size: 12px;
 }
 .populares button:hover {
   text-decoration: underline;
 }
 .taquilla .hero-taquilla a:focus-visible,
 .taquilla .hero-taquilla button:focus-visible {
-  outline-color: #9191ff;
+  outline-color: var(--foco-sobre-oscuro);
 }
 @media (max-width: 1100px) {
   .interior-taquilla {
     gap: 32px;
-    grid-template-columns: 1.35fr 1fr;
+    grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.9fr);
   }
 }
 @media (max-width: 640px) {
   .hero-taquilla {
-    padding: 32px 0;
+    padding: 36px 0;
   }
 }
 @media (max-width: 640px) {
@@ -91,12 +112,13 @@
 @media (max-width: 640px) {
   .hero-taquilla h1 {
     font-size: 34px;
-    margin-block: 20px;
+    margin-block: 18px 14px;
   }
 }
 @media (max-width: 640px) {
   .hero-taquilla .interior-taquilla > div > p {
     font-size: 14px;
+    margin-bottom: 18px;
   }
 }
 @media (max-width: 640px) {

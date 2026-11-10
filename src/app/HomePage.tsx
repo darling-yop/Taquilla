@@ -49,6 +49,7 @@ export default function HomePage() {
     }
     if (filtros.ciudad) parametros.set("ciudad", filtros.ciudad);
     if (filtros.fecha) parametros.set("fecha", filtros.fecha);
+    parametros.set("filtros", "personalizados");
     parametros.set("pagina", "1");
     router.push(`/explorar?${parametros.toString()}`);
   }

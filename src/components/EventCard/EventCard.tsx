@@ -1,5 +1,6 @@
 import AficheEvento from "../AficheEvento/AficheEvento";
 import IconoEvento from "../IconoEvento/IconoEvento";
+import Button from "../Button/Button";
 import { usePreferencias } from "../../context/PreferenciasContext";
 import type { EventoListado } from "../../data/eventosMock";
 import "./EventCard.css";
@@ -52,13 +53,13 @@ export default function EventCard({
             <span>{textos.comun.desde}</span>
             <strong>{moneda.format(evento.precio).replace(/\s+/g, " ")}</strong>
           </p>
-          <button
+          <Button
+            variant="outline"
             type="button"
-            className="event-card-button"
             onClick={() => onVerEvento(evento)}
           >
             {textos.comun.verEvento}
-          </button>
+          </Button>
         </div>
       </div>
     </article>

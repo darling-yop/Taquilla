@@ -37,6 +37,11 @@ a {
   text-decoration: none;
 }
 
+.ancho-home {
+  width: min(var(--ancho-contenido), calc(100% - var(--margen-total)));
+  margin-inline: auto;
+}
+
 button,
 input,
 select {
@@ -55,6 +60,14 @@ select {
 
 button {
   cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+body {
+  overflow-x: clip;
 }
 
 ::view-transition-old(root),

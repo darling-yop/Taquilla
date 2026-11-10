@@ -1,4 +1,5 @@
 import "./FilterChips.css";
+import Button from "../Button/Button";
 
 export interface ActiveFilter {
   id: string;
@@ -20,13 +21,15 @@ export default function FilterChips({
       {filters.map((filter) => (
         <span className="filter-chip" key={filter.id}>
           {filter.label}
-          <button
+          <Button
+            variant="icon"
             type="button"
+            className="filter-chip-remove"
             aria-label={`${removeLabel}: ${filter.label}`}
             onClick={filter.onRemove}
           >
             <span aria-hidden="true">×</span>
-          </button>
+          </Button>
         </span>
       ))}
     </div>

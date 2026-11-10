@@ -1,5 +1,8 @@
+"use client";
+
 import { useEffect, useId, useRef } from "react";
 import Link from "next/link";
+import Button from "../Button/Button";
 import type { TextosInterfaz } from "../../data/interfaz";
 import "./PreferenciasCookies.css";
 export default function PreferenciasCookies({
@@ -63,22 +66,22 @@ export default function PreferenciasCookies({
       </label>
       {error && <p role="alert">{textos.error}</p>}
       <div className="grupo-botones">
-        <button
+        <Button
+          variant="primary"
           type="button"
-          className="boton-home primario"
           aria-label={textos.ariaGuardar}
           onClick={() => onGuardar(permitir)}
         >
           {textos.guardar}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="outline"
           type="button"
-          className="boton-home secundario"
           aria-label={textos.ariaCerrar}
           onClick={() => dialogo.current?.close()}
         >
           {textos.cerrar}
-        </button>
+        </Button>
       </div>
     </dialog>
   );

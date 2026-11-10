@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Button from "../Button/Button";
 import "./BannerCookies.css";
 import type { TextosInterfaz } from "../../data/interfaz";
 
@@ -25,30 +26,31 @@ export default function BannerCookies({
         {textos.politica}
       </Link>
       <div className="grupo-botones">
-        <button
+        <Button
+          variant="primary"
           type="button"
-          className="boton-home primario"
           aria-label={textos.ariaAceptar}
           onClick={onAceptar}
         >
           {textos.aceptar}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="outline"
           type="button"
-          className="boton-home secundario"
           aria-label={textos.ariaRechazar}
           onClick={onRechazar}
         >
           {textos.rechazar}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="outline"
           type="button"
-          className="enlace-home"
+          className="cookie-configure"
           aria-label={textos.ariaConfigurar}
           onClick={onConfigurar}
         >
           {textos.configurar}
-        </button>
+        </Button>
       </div>
     </aside>
   );

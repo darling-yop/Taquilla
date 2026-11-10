@@ -11,6 +11,7 @@ export default function Footer({
   onCuenta,
   textos,
   onAbrirCookies,
+  onConfigurarCookies,
 }: {
   nombre: string;
   tipo: string;
@@ -20,6 +21,7 @@ export default function Footer({
   textos: TextosAplicacion;
   onCuenta: (tipo: TipoCuenta) => void;
   onAbrirCookies: () => void;
+  onConfigurarCookies: () => void;
 }) {
   return (
     <footer className="pie-home">
@@ -46,13 +48,22 @@ export default function Footer({
         </div>
         <div className="pie-creditos">
           <span>{textos.pie.derechos}</span>
-          <button
-            className="enlace-home"
-            aria-label={textos.interfaz.ariaPreferencias}
-            onClick={onAbrirCookies}
-          >
-            {textos.interfaz.cookies}
-          </button>
+          <div className="pie-creditos-acciones">
+            <button
+              className="enlace-home"
+              aria-label={textos.interfaz.ariaPreferencias}
+              onClick={onAbrirCookies}
+            >
+              {textos.interfaz.cookies}
+            </button>
+            <button
+              className="enlace-home"
+              aria-label={textos.interfaz.ariaConfigurarFooter}
+              onClick={onConfigurarCookies}
+            >
+              {textos.interfaz.configurarFooter}
+            </button>
+          </div>
         </div>
       </div>
     </footer>

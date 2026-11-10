@@ -33,6 +33,8 @@ export const textosCookies = {
   ariaGuardar: "Save cookie preferences",
   ariaCerrar: "Close cookie preferences",
   ariaEnlacePolitica: "Read the privacy policy",
+  configurarFooter: "Configure cookies",
+  ariaConfigurarFooter: "Reset and configure cookie preferences",
 } as const;
 
 export const textosCabecera = {

@@ -1,18 +1,25 @@
 .ui-button {
   display: inline-flex;
   min-width: 0;
-  height: 34px;
+  min-height: 36px;
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 0 12px;
+  padding: 0 14px;
   border: 1px solid transparent;
   border-radius: var(--radio-m);
   font: inherit;
   font-size: 13px;
+  font-weight: var(--peso-medio);
   line-height: 1;
   white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--duracion) ease,
+    border-color var(--duracion) ease,
+    color var(--duracion) ease,
+    box-shadow var(--duracion) ease;
 }
 
 .ui-button--primary {
@@ -36,6 +43,7 @@
 
 .ui-button--icon {
   width: 34px;
+  min-height: 34px;
   padding: 0;
   border-color: var(--borde);
   border-radius: 50%;
@@ -45,4 +53,39 @@
 
 .ui-button--icon:hover {
   background: var(--superficie-hover);
+}
+
+.ui-button--link {
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.ui-button--link:hover {
+  color: var(--suave);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ui-button-arrow {
+  transition: transform var(--duracion) ease;
+}
+
+.ui-button--link:hover .ui-button-arrow {
+  transform: translateX(3px);
+}
+
+.ui-button:disabled {
+  border-color: var(--borde);
+  background: var(--superficie-suave);
+  color: var(--deshabilitado);
+  cursor: not-allowed;
+}
+
+.ui-button:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 3px;
 }
