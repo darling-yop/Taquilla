@@ -1,28 +1,29 @@
 import "./SelectorIdioma.css";
-import type { Idioma } from "../../data/interfaz";
+import type { Idioma, TextosInterfaz } from "../../data/interfaz";
 
 export default function SelectorIdioma({
   idioma,
-  onCambiar,
-  etiqueta,
-  nombres,
+  onChangeLanguage,
+  textos,
 }: {
   idioma: Idioma;
-  onCambiar: (idioma: Idioma) => void;
-  etiqueta: string;
-  nombres: Record<Idioma, string>;
+  onChangeLanguage: (idioma: Idioma) => void;
+  textos: TextosInterfaz;
 }) {
   return (
-    <div className="idiomas-home" role="group" aria-label={etiqueta}>
+    <div className="idiomas-home" role="group" aria-label={textos.headerIdioma}>
       {(["es", "en"] as const).map((valor) => (
         <button
           type="button"
           key={valor}
           lang={valor}
+          aria-label={
+            valor === "es" ? textos.ariaIdiomaEs : textos.ariaIdiomaEn
+          }
           aria-pressed={idioma === valor}
-          onClick={() => onCambiar(valor)}
+          onClick={() => onChangeLanguage(valor)}
         >
-          {nombres[valor]}
+          {valor.toUpperCase()}
         </button>
       ))}
     </div>

@@ -1,18 +1,24 @@
 .idiomas-home {
   display: flex;
-  padding: 3px;
-  background: var(--superficie);
+  height: 34px;
+  flex: 0 0 auto;
+  align-items: center;
+  padding: 2px;
   border: 1px solid var(--borde);
-  border-radius: 99px;
+  border-radius: var(--radio-pildora);
+  background: var(--superficie);
 }
 .idiomas-home button {
+  height: 28px;
+  min-width: 30px;
+  flex: 0 0 auto;
+  padding: 0 8px;
   border: 0;
-  border-radius: 99px;
-  padding: 7px 12px;
+  border-radius: var(--radio-pildora);
   color: var(--tinta);
   background: transparent;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: var(--peso-semi);
 }
 .idiomas-home button[aria-pressed="true"] {
   background: var(--acento);

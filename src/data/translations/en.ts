@@ -1,0 +1,51 @@
+export const textosCookies = {
+  cookies: "Cookie preferences",
+  banner: "Browser preferences",
+  descripcion:
+    "You can allow this project to remember your language. We do not use analytics or advertising cookies.",
+  aceptar: "Accept preferences",
+  rechazar: "Reject optional",
+  configurar: "Configure",
+  guardar: "Save selection",
+  cerrar: "Close preferences",
+  necesarias: "Necessary",
+  necesariasTexto: "Store your consent decision. Always active.",
+  preferencias: "Remember language",
+  preferenciasTexto: "Keep your chosen language in this browser.",
+  guardado: "Preferences saved.",
+  error: "We could not save your decision in this browser.",
+  politica: "Privacy policy",
+  politicaUrl: "/politica-de-privacidad",
+  politicaDescripcion:
+    "This site stores only the preferences needed to remember your consent and chosen language. We do not use analytics or advertising cookies.",
+  politicaNecesarias: "Necessary cookies",
+  politicaNecesariasTexto:
+    "They store your consent decision and let us remember essential preferences.",
+  politicaPreferencias: "Language preference",
+  politicaPreferenciasTexto:
+    "The selected language is stored locally to keep the interface consistent. If you accept preferences, it is also stored in a cookie.",
+  ariaBanner: "Cookie preferences notice",
+  ariaPreferencias: "Cookie preferences dialog",
+  ariaPolitica: "Privacy and cookie policy",
+  ariaAceptar: "Accept cookie preferences",
+  ariaRechazar: "Reject optional cookies",
+  ariaConfigurar: "Configure cookie preferences",
+  ariaGuardar: "Save cookie preferences",
+  ariaCerrar: "Close cookie preferences",
+  ariaEnlacePolitica: "Read the privacy policy",
+} as const;
+
+export const textosCabecera = {
+  headerInicio: "Home",
+  headerExplorar: "Explore",
+  headerIngresar: "Log in",
+  headerCrearCuenta: "Sign up",
+  headerBuscar: "Search events or artists",
+  headerNavegacion: "Main navigation",
+  headerIdioma: "Select language",
+  headerAbrirMenu: "Open menu",
+  headerCerrarMenu: "Close menu",
+  headerAbrirAccesibilidad: "Open accessibility panel",
+  ariaIdiomaEs: "Cambiar a español",
+  ariaIdiomaEn: "Switch to English",
+};

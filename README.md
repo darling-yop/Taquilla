@@ -45,29 +45,28 @@ npm run typecheck
 - Inicio bilingüe (español e inglés), con selector de idioma.
 - Traducciones de navegación y pantallas obtenidas desde `/textos?idioma=es|en`;
   el selector guarda la preferencia del idioma entre visitas.
-- Catálogo en `/explorar` con búsqueda por texto y filtros por categoría,
-  ciudad y fecha.
-- Ordenamiento por fecha, precio o popularidad, paginación y filtros persistidos
-  en la URL (incluye compatibilidad con atrás/adelante del navegador).
+- Listado adaptable en `/explorar` con seis eventos de muestra, tarjetas,
+  chips de filtros removibles y ordenamiento por fecha o precio.
 - Secciones de eventos destacados y de Manizales.
 - Diálogo con el detalle de cada evento y acceso a cuenta informativo.
 - Preferencias de cookies con aviso en la primera visita, aceptar/rechazar,
   configuración de la cookie opcional de idioma y persistencia de la decisión.
+- Panel de accesibilidad con tamaño de texto, alto contraste, subrayado de
+  enlaces y reducción de animaciones; sus ajustes se conservan en el navegador.
 - Diseño adaptable con estilos globales y variables de diseño.
 
 La página de inicio obtiene eventos destacados, categorías y eventos de
-Manizales desde la API. El catálogo de `/explorar` consulta el listado paginado
-de eventos y opciones de categoría/ciudad; sus parámetros `q`, `categoria`,
-`ciudad`, `fecha`, `orden` y `pagina` se conservan en la URL. Las respuestas se
-adaptan en `src/services/inicio.ts`; las traducciones del servicio y sus textos
-alternativos están en `src/services/textos.ts`. El idioma elegido se persiste
-en el almacenamiento local para mantener la interfaz al navegar o recargar;
-la cookie de idioma solo se guarda cuando se aceptan las preferencias
-opcionales. Si falla la API de textos, se muestran textos locales y aparece una
-opción de reintento. Las solicitudes HTTP y los estados de carga/reintento
-están en `src/services/api.ts`, `src/services/catalogoEventos.ts` y los hooks
-bajo `src/hooks/`. `src/data/catalogo.ts` contiene utilidades de formato y
-búsqueda. El flujo de compra y el acceso real a cuentas no están implementados.
+Manizales desde la API. `/explorar` presenta seis eventos mock definidos en
+`src/data/eventosMock.ts` para reproducir la referencia visual; los filtros
+activos y el orden elegido se conservan en la URL. Las traducciones del
+servicio y sus textos alternativos están en `src/services/textos.ts`. El idioma
+elegido se persiste en el almacenamiento local para mantener la interfaz al
+navegar o recargar; la cookie de idioma solo se guarda cuando se aceptan las
+preferencias opcionales. Si falla la API de textos, se muestran textos locales
+y aparece una opción de reintento. Las solicitudes HTTP y los estados de carga
+están en `src/services/api.ts` y los hooks bajo `src/hooks/`. `src/data/catalogo.ts`
+contiene utilidades de formato y búsqueda. El flujo de compra y el acceso real a
+cuentas no están implementados.
 
 ## Estructura
 

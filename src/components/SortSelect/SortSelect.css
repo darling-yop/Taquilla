@@ -1,0 +1,32 @@
+.sort-select {
+  display: flex;
+  min-height: 34px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border: 1px solid var(--borde);
+  border-radius: 7px;
+  background: var(--superficie);
+  color: var(--suave);
+  font-size: 11px;
+}
+.sort-select select {
+  max-width: 180px;
+  min-height: 26px;
+  border: 0;
+  background: transparent;
+  color: var(--tinta);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+@media (max-width: 480px) {
+  .sort-select {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .sort-select select {
+    max-width: 70%;
+  }
+}

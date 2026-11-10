@@ -1,10 +1,12 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef } from "react";
+import Link from "next/link";
 import type { TextosInterfaz } from "../../data/interfaz";
 import "./PreferenciasCookies.css";
 export default function PreferenciasCookies({
   abierto,
   textos,
   permitir,
+  onCambiar,
   onGuardar,
   onCerrar,
   error,
@@ -12,27 +14,38 @@ export default function PreferenciasCookies({
   abierto: boolean;
   textos: TextosInterfaz;
   permitir: boolean;
+  onCambiar: (permitir: boolean) => void;
   onGuardar: (permitir: boolean) => void;
   onCerrar: () => void;
   error: boolean;
 }) {
   const dialogo = useRef<HTMLDialogElement>(null);
   const id = useId();
-  const [seleccion, setSeleccion] = useState(permitir);
   useEffect(() => {
     if (abierto) {
       if (dialogo.current && !dialogo.current.open) dialogo.current.showModal();
     } else if (dialogo.current?.open) dialogo.current.close();
-  }, [abierto, permitir]);
+  }, [abierto]);
   return (
     <dialog
       className="preferencias-dialogo"
       ref={dialogo}
       aria-labelledby={id}
+      aria-describedby={`${id}-descripcion`}
+      aria-label={textos.ariaPreferencias}
       onClose={onCerrar}
     >
       <h2 id={id}>{textos.cookies}</h2>
-      <p>{textos.descripcion}</p>
+      <p id={`${id}-descripcion`}>
+        {textos.descripcion}{" "}
+        <Link
+          className="cookie-policy-link"
+          href={textos.politicaUrl}
+          aria-label={textos.ariaEnlacePolitica}
+        >
+          {textos.politica}
+        </Link>
+      </p>
       <section>
         <h3>{textos.necesarias}</h3>
         <p>{textos.necesariasTexto}</p>
@@ -40,8 +53,8 @@ export default function PreferenciasCookies({
       <label className="opcion-cookie">
         <input
           type="checkbox"
-          checked={seleccion}
-          onChange={(e) => setSeleccion(e.target.checked)}
+          checked={permitir}
+          onChange={(e) => onCambiar(e.target.checked)}
         />
         <span>
           <strong>{textos.preferencias}</strong>
@@ -53,13 +66,15 @@ export default function PreferenciasCookies({
         <button
           type="button"
           className="boton-home primario"
-          onClick={() => onGuardar(seleccion)}
+          aria-label={textos.ariaGuardar}
+          onClick={() => onGuardar(permitir)}
         >
           {textos.guardar}
         </button>
         <button
           type="button"
           className="boton-home secundario"
+          aria-label={textos.ariaCerrar}
           onClick={() => dialogo.current?.close()}
         >
           {textos.cerrar}

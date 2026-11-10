@@ -46,7 +46,11 @@ export default function Footer({
         </div>
         <div className="pie-creditos">
           <span>{textos.pie.derechos}</span>
-          <button className="enlace-home" onClick={onAbrirCookies}>
+          <button
+            className="enlace-home"
+            aria-label={textos.interfaz.ariaPreferencias}
+            onClick={onAbrirCookies}
+          >
             {textos.interfaz.cookies}
           </button>
         </div>

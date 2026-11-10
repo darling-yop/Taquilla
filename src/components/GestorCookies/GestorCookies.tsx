@@ -5,10 +5,14 @@ import PreferenciasCookies from "../PreferenciasCookies/PreferenciasCookies";
 import "./GestorCookies.css";
 export default function GestorCookies({
   abierto,
+  permitir,
+  onCambiar,
   onAbrir,
   onCerrar,
 }: {
   abierto: boolean;
+  permitir: boolean;
+  onCambiar: (permitir: boolean) => void;
   onAbrir: () => void;
   onCerrar: () => void;
 }) {
@@ -44,10 +48,10 @@ export default function GestorCookies({
         </p>
       )}
       <PreferenciasCookies
-        key={abierto ? "abierto" : "cerrado"}
         abierto={abierto}
         textos={t}
-        permitir={consentimiento === "aceptado"}
+        permitir={permitir}
+        onCambiar={onCambiar}
         onGuardar={guardar}
         onCerrar={onCerrar}
         error={error}

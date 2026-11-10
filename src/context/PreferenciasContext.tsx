@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { guardarCookie, borrarCookie } from "../services/cookies";
+import { guardarCookie, borrarCookie, leerCookie } from "../services/cookies";
 import { proyecto } from "../config/proyecto";
 import { obtenerTextos, textosAlternativos } from "../services/textos";
 import type { TextosAplicacion } from "../data/textos";
@@ -13,7 +13,7 @@ type Idioma = "es" | "en";
 
 interface Preferencias {
   idioma: Idioma;
-  cambiarIdioma: (valor: Idioma) => void;
+  changeLanguage: (valor: Idioma) => void;
   consentimiento: Consentimiento;
   preferenciasCargadas: boolean;
   guardarConsentimiento: (permitir: boolean) => boolean;
@@ -65,12 +65,25 @@ export function PreferenciasProvider({
       );
       if (valor === "aceptado" || valor === "rechazado") {
         consentimientoLocal = valor;
+      } else {
+        const consentimientoCookie = leerCookie("consentimiento");
+        if (
+          consentimientoCookie === "aceptado" ||
+          consentimientoCookie === "rechazado"
+        ) {
+          consentimientoLocal = consentimientoCookie;
+        }
       }
       const idiomaGuardado = window.localStorage.getItem(
         `${proyecto.id}_idioma`,
       );
       if (idiomaGuardado === "en" || idiomaGuardado === "es") {
         idiomaLocal = idiomaGuardado;
+      } else {
+        const idiomaCookie = leerCookie("idioma");
+        if (idiomaCookie === "en" || idiomaCookie === "es") {
+          idiomaLocal = idiomaCookie;
+        }
       }
     } catch {
       falloAlLeer = true;
@@ -148,8 +161,18 @@ export function PreferenciasProvider({
           : textos.inicio.descripcionSeo;
       });
   }, [idioma, pathname, textos]);
-  function cambiarIdioma(valor: Idioma) {
-    setIdioma(valor);
+  function changeLanguage(valor: Idioma) {
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const actualizarIdioma = () => setIdioma(valor);
+
+    if (!reducedMotion && "startViewTransition" in document) {
+      document.startViewTransition(actualizarIdioma);
+    } else {
+      actualizarIdioma();
+    }
+
     try {
       window.localStorage.setItem(`${proyecto.id}_idioma`, valor);
       if (consentimiento === "aceptado") {
@@ -203,7 +226,7 @@ export function PreferenciasProvider({
     <PreferenciasContext.Provider
       value={{
         idioma,
-        cambiarIdioma,
+        changeLanguage,
         consentimiento,
         preferenciasCargadas,
         guardarConsentimiento,

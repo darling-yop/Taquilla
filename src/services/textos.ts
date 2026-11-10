@@ -76,15 +76,7 @@ export function adaptarTextos(
     );
   const textosInterfaz = {
     ...local,
-    inicio: t("navbar.enlaces.inicio", local.inicio),
-    ingresar: t("navbar.botones.ingresar", local.ingresar),
-    registro: t("navbar.botones.crearCuenta", local.registro),
-    abrirMenu: t("menuMovil.abrir", local.abrirMenu),
-    cerrarMenu: t("menuMovil.cerrar", local.cerrarMenu),
-    navegacion: t("navbar.aria.navegacion", local.navegacion),
-    idioma: t("navbar.aria.idioma", local.idioma),
-    buscar: t("navbar.buscador.placeholder", local.buscar),
-    explora: t("footer.columnas.explora.titulo", local.explora),
+    explora: local.explora,
     cuenta: t("footer.columnas.cuenta.titulo", local.cuenta),
     saltar: t("general.aria.saltarAlContenido", local.saltar),
   };
@@ -290,6 +282,10 @@ export function adaptarTextos(
           : "Filtra eventos por categoría, fecha, ciudad y precio.",
       ),
       filtroAria: idioma === "en" ? "Filter events" : "Filtrar eventos",
+      tituloFiltros: t(
+        `${explore}.filtros.titulo`,
+        idioma === "en" ? "Filters" : "Filtros",
+      ),
       eventoArtista: t(
         `${home}.hero.buscador.etiquetas.que`,
         idioma === "en" ? "Event or artist" : "Evento o artista",
@@ -318,6 +314,16 @@ export function adaptarTextos(
         `${explore}.filtros.fecha.titulo`,
         idioma === "en" ? "Date" : "Fecha",
       ),
+      hoy: idioma === "en" ? "Today" : "Hoy",
+      esteFinDeSemana: idioma === "en" ? "This weekend" : "Este fin de semana",
+      esteMes: idioma === "en" ? "This month" : "Este mes",
+      elegirFechas: idioma === "en" ? "Choose dates" : "Elegir fechas",
+      fechaInicio: idioma === "en" ? "Start date" : "Fecha de inicio",
+      fechaFin: idioma === "en" ? "End date" : "Fecha de fin",
+      precio: idioma === "en" ? "Price" : "Precio",
+      precioMinimo: idioma === "en" ? "Minimum price" : "Precio mínimo",
+      precioMaximo: idioma === "en" ? "Maximum price" : "Precio máximo",
+      filtrosActivos: idioma === "en" ? "Active filters" : "Filtros activos",
       orden: t(
         `${explore}.orden.etiqueta`,
         idioma === "en" ? "Sort by:" : "Ordenar por:",
@@ -330,6 +336,7 @@ export function adaptarTextos(
         `${explore}.orden.opciones.precio`,
         idioma === "en" ? "Lowest price" : "Precio más bajo",
       ),
+      ordenPrecioMayor: idioma === "en" ? "Highest price" : "Precio más alto",
       ordenPopularidad: t(
         `${explore}.orden.opciones.popularidad`,
         idioma === "en" ? "Most popular" : "Más populares",
@@ -404,10 +411,6 @@ export function adaptarTextos(
         `${home}.tarjeta.botones.verEvento`,
         idioma === "en" ? "View event" : "Ver evento",
       ),
-      verTodos: t(
-        `${home}.destacados.enlaces.verTodos`,
-        idioma === "en" ? "View all" : "Ver todos",
-      ),
       cargandoEventos: t(
         `${states}.cargando.indicador`,
         idioma === "en" ? "Loading events" : "Cargando eventos",
@@ -429,10 +432,6 @@ export function adaptarTextos(
       probarOtraBusqueda: t(
         `${explore}.vacio.texto`,
         idioma === "en" ? "Try another search." : "Prueba con otra búsqueda.",
-      ),
-      verTodosEventos: t(
-        `${home}.destacados.enlaces.verTodos`,
-        idioma === "en" ? "View all events" : "Ver todos los eventos",
       ),
       cerrar: t(
         "general.aria.cerrarDialogo",

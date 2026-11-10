@@ -2,17 +2,17 @@
   width: min(560px, calc(100% - 32px));
   max-height: calc(100dvh - 32px);
   overflow: auto;
-  padding: 28px;
+  padding: var(--espacio-cookie);
   border: 1px solid var(--borde);
-  border-radius: var(--radio);
+  border-radius: var(--radio-l);
   color: var(--tinta);
   background: var(--superficie);
 }
 .preferencias-dialogo::backdrop {
-  background: rgb(0 0 0 / 65%);
+  background: var(--velo);
 }
 .preferencias-dialogo p {
-  margin-block: 12px 20px;
+  margin-block: var(--espacio-3) var(--espacio-5);
 }
 .preferencias-dialogo h2 {
   font-size: 26px;
@@ -23,11 +23,11 @@
 .opcion-cookie {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-block: 24px;
-  padding: 16px;
+  gap: var(--espacio-4);
+  margin-block: var(--espacio-5);
+  padding: var(--espacio-4);
   border: 1px solid var(--borde);
-  border-radius: 8px;
+  border-radius: var(--radio-m);
   cursor: pointer;
 }
 .opcion-cookie input {

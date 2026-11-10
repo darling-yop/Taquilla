@@ -4,6 +4,8 @@ import { useEffect, useId, useRef, useState } from "react";
 import Marca from "../Marca/Marca";
 import MenuMovil from "../MenuMovil/MenuMovil";
 import SelectorIdioma from "../SelectorIdioma/SelectorIdioma";
+import PanelAccesibilidad from "../PanelAccesibilidad/PanelAccesibilidad";
+import Button from "../Button/Button";
 import type { Idioma } from "../../data/interfaz";
 import type { TipoCuenta } from "../../types";
 import type { TextosAplicacion } from "../../data/textos";
@@ -12,7 +14,7 @@ export default function Navbar({
   nombre,
   tipo,
   idioma,
-  onCambiarIdioma,
+  onChangeLanguage,
   textos,
   destino,
   etiqueta,
@@ -23,7 +25,7 @@ export default function Navbar({
   nombre: string;
   tipo: string;
   idioma: Idioma;
-  onCambiarIdioma: (idioma: Idioma) => void;
+  onChangeLanguage: (idioma: Idioma) => void;
   textos: TextosAplicacion;
   destino: string;
   etiqueta: string;
@@ -67,13 +69,14 @@ export default function Navbar({
     >
       <div className="ancho-home fila-cabecera">
         <Marca nombre={nombre} tipo={tipo} ariaLabel={textos.logoAria} />
-        <button
+        <Button
+          variant="outline"
           type="button"
           className="ingreso-movil"
           onClick={() => abrirCuenta("ingresar")}
         >
-          {t.ingresar}
-        </button>
+          {t.headerIngresar}
+        </Button>
         <MenuMovil
           abierto={abierto}
           onAlternar={() => setAbierto((valor) => !valor)}
@@ -103,29 +106,44 @@ export default function Navbar({
                 href={buscarDestino}
                 onClick={cerrarMenu}
               >
-                {t.buscar}
+                <svg
+                  viewBox="0 0 24 24"
+                  width="16"
+                  height="16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="10.8" cy="10.8" r="6.8" />
+                  <path d="m16 16 4 4" />
+                </svg>
+                <span>{t.headerBuscar}</span>
               </a>
             )}
+            <PanelAccesibilidad textos={textos.interfaz} />
             <SelectorIdioma
               idioma={idioma}
-              onCambiar={onCambiarIdioma}
-              etiqueta={t.idioma}
-              nombres={textos.idiomas}
+              onChangeLanguage={onChangeLanguage}
+              textos={t}
             />
-            <button
+            <Button
+              variant="outline"
               type="button"
               className="ingresar-home"
               onClick={() => abrirCuenta("ingresar")}
             >
-              {t.ingresar}
-            </button>
-            <button
+              {t.headerIngresar}
+            </Button>
+            <Button
+              variant="primary"
               type="button"
-              className="boton-home primario"
+              className="crear-cuenta-home"
               onClick={() => abrirCuenta("registro")}
             >
-              {t.registro}
-            </button>
+              {t.headerCrearCuenta}
+            </Button>
           </div>
         </nav>
       </div>

@@ -1,0 +1,17 @@
+.politica-privacidad {
+  display: grid;
+  gap: var(--espacio-seccion);
+  padding-block: var(--espacio-pagina-superior) var(--espacio-pagina-inferior);
+}
+.politica-privacidad section {
+  display: grid;
+  gap: var(--espacio-3);
+}
+.politica-privacidad h1,
+.politica-privacidad h2 {
+  color: var(--tinta);
+}
+.politica-privacidad p {
+  max-width: 70ch;
+  color: var(--suave);
+}

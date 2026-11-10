@@ -25,11 +25,19 @@ export default function LayoutPublico({
   inicioDestino?: string;
   buscarDestino?: string;
 }) {
-  const { idioma, cambiarIdioma, textos, errorTextos, recargarTextos } =
-    usePreferencias();
+  const {
+    idioma,
+    changeLanguage,
+    textos,
+    errorTextos,
+    recargarTextos,
+    consentimiento,
+  } = usePreferencias();
   const [cookiesAbiertas, setCookiesAbiertas] = useState(false);
+  const [permitirCookies, setPermitirCookies] = useState(false);
   const disparador = useRef<HTMLElement | null>(null);
   function abrirCookies() {
+    setPermitirCookies(consentimiento === "aceptado");
     disparador.current =
       document.activeElement instanceof HTMLElement
         ? document.activeElement
@@ -55,7 +63,7 @@ export default function LayoutPublico({
         nombre={proyecto.nombre}
         tipo={proyecto.id}
         idioma={idioma}
-        onCambiarIdioma={cambiarIdioma}
+        onChangeLanguage={changeLanguage}
         textos={textos}
         destino={destino}
         etiqueta={etiqueta}
@@ -78,6 +86,8 @@ export default function LayoutPublico({
       />
       <GestorCookies
         abierto={cookiesAbiertas}
+        permitir={permitirCookies}
+        onCambiar={setPermitirCookies}
         onAbrir={abrirCookies}
         onCerrar={cerrarCookies}
       />

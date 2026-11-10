@@ -1,8 +1,8 @@
 .tarjeta-evento {
   overflow: hidden;
-  border: 1px solid #dedede;
-  border-radius: 12px;
-  background: #fff;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-l);
+  background: var(--superficie);
 }
 .contenido-evento {
   padding: 16px;
@@ -18,7 +18,7 @@
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  color: #595959;
+  color: var(--suave);
   margin-top: 10px;
 }
 .contenido-evento > p svg {
@@ -30,12 +30,15 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 8px;
+  gap: 16px;
   margin-top: 24px;
+}
+.precio-evento > span {
+  min-width: 0;
 }
 .precio-evento small {
   display: block;
-  color: #595959;
+  color: var(--suave);
   font-size: 12px;
 }
 .precio-evento strong {
@@ -43,6 +46,18 @@
   font-weight: 500;
 }
 .precio-evento .boton-home {
-  border-color: #8c8c8c;
+  min-height: 42px;
+  flex: 0 0 auto;
+  border-color: var(--borde-fuerte);
   padding: 9px 16px;
+  white-space: nowrap;
+}
+@media (max-width: 380px) {
+  .precio-evento {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .precio-evento .boton-home {
+    width: 100%;
+  }
 }

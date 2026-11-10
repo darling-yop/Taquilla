@@ -1,398 +1,313 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import LayoutPublico from "../../components/LayoutPublico/LayoutPublico";
-import TarjetaEvento from "../../components/TarjetaEvento/TarjetaEvento";
-import AficheEvento from "../../components/AficheEvento/AficheEvento";
+import EventGrid from "../../components/EventGrid/EventGrid";
+import FilterChips from "../../components/FilterChips/FilterChips";
+import SortSelect from "../../components/SortSelect/SortSelect";
+import FilterSidebar from "../../components/FilterSidebar/FilterSidebar";
 import DialogoDetalle from "../../components/DialogoDetalle/DialogoDetalle";
+import AficheEvento from "../../components/AficheEvento/AficheEvento";
 import { useDetalle } from "../../hooks/useDetalle";
-import { useRecurso } from "../../hooks/useRecurso";
-import { useCatalogoEventos } from "../../hooks/useCatalogoEventos";
-import {
-  adaptarCategoriaInicio,
-  adaptarCiudadInicio,
-} from "../../services/inicio";
 import { usePreferencias } from "../../context/PreferenciasContext";
-import { dinero } from "../../data/catalogo";
-import type { CategoriaEvento, Evento } from "../../types";
+import { categoriasMock, eventosMock } from "../../data/eventosMock";
+import type { EventoListado } from "../../data/eventosMock";
+import type { EventSort } from "../../components/SortSelect/SortSelect";
 import "./ExplorarPage.css";
 import { formatearTexto } from "../../services/textos";
 
-const tamanioPagina = 12;
-const ordenes = ["fecha", "precio", "popularidad"] as const;
-type OrdenEventos = (typeof ordenes)[number];
+const categoriasPredeterminadas = ["conciertos", "festivales"];
+const categoriasValidas = categoriasMock.map(({ id }) => id.toLowerCase());
+const periodoPredeterminado = "fin-semana";
+const precioMinimoPredeterminado = 30000;
+const precioMaximoPredeterminado = 150000;
 
-function valorValido(
-  valor: string | null,
-  permitidos: readonly string[],
-): string {
-  return valor && permitidos.includes(valor) ? valor : "";
-}
-
-function ordenValido(valor: string | null): OrdenEventos {
-  return ordenes.find((orden) => orden === valor) ?? "fecha";
-}
-
-function fechaValida(valor: string | null): string {
-  if (!valor || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) return "";
-  const fecha = new Date(`${valor}T12:00:00`);
-  return Number.isNaN(fecha.getTime()) ||
-    fecha.toISOString().slice(0, 10) !== valor
-    ? ""
-    : valor;
-}
-
-function construirRuta(
-  consulta: string,
-  categoria: string,
-  ciudad: string,
-  orden: OrdenEventos,
-): string {
-  const parametros = new URLSearchParams({
-    pagina: "1",
-    porPagina: "100",
-    orden,
-  });
-  if (consulta) parametros.set("q", consulta);
-  if (categoria) parametros.set("categoria", categoria.toLowerCase());
-  if (ciudad) parametros.set("ciudad", ciudad);
-  return `/eventos?${parametros.toString()}`;
-}
-
-function actualizarUrl(
-  router: ReturnType<typeof useRouter>,
-  valores: Record<string, string>,
+function parametrosActualizados(
+  actuales: URLSearchParams,
+  cambios: Record<string, string>,
 ) {
-  const parametros = new URLSearchParams();
-  Object.entries(valores).forEach(([clave, valor]) => {
-    if (valor) parametros.set(clave, valor);
+  const siguientes = new URLSearchParams(actuales);
+  Object.entries(cambios).forEach(([clave, valor]) => {
+    if (valor) siguientes.set(clave, valor);
+    else siguientes.delete(clave);
   });
-  parametros.set("pagina", valores.pagina || "1");
-  router.push(`/explorar?${parametros.toString()}`);
+  siguientes.set("filtros", "personalizados");
+  return siguientes;
 }
 
 export default function ExplorarPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const parametros = searchParams ?? new URLSearchParams();
+  const parametros = useMemo(
+    () => new URLSearchParams(searchParams?.toString()),
+    [searchParams],
+  );
   const { idioma, textos } = usePreferencias();
   const en = idioma === "en";
   const { detalle, setDetalle, abrirCuenta } = useDetalle(textos);
-  const categoriasRecurso = useRecurso("/categorias", adaptarCategoriaInicio);
-  const ciudadesRecurso = useRecurso("/ciudades", adaptarCiudadInicio);
-  const categorias = categoriasRecurso.datos ?? [];
-  const ciudades = ciudadesRecurso.datos ?? [];
-  const categoria = valorValido(parametros.get("categoria"), [
-    "conciertos",
-    "teatro",
-    "deportes",
-    "festivales",
-    "comedia",
-    "familiares",
-  ]);
-  const ciudad = parametros.get("ciudad")?.trim() ?? "";
-  const consulta = (parametros.get("q") ?? "").trim();
-  const fecha = fechaValida(parametros.get("fecha"));
-  const orden = ordenValido(parametros.get("orden"));
-  const paginaNumero = Number(parametros.get("pagina") || "1");
-  const pagina =
-    Number.isInteger(paginaNumero) && paginaNumero > 0 ? paginaNumero : 1;
-  const ruta = useMemo(
-    () => construirRuta(consulta, categoria, ciudad, orden),
-    [consulta, categoria, ciudad, orden],
+  const esPersonalizado = parametros.get("filtros") === "personalizados";
+  const categorias = useMemo(
+    () =>
+      parametros.has("categoria")
+        ? (parametros.get("categoria") ?? "")
+            .split(",")
+            .filter((categoria) => categoriasValidas.includes(categoria))
+        : esPersonalizado
+          ? []
+          : categoriasPredeterminadas,
+    [esPersonalizado, parametros],
   );
-  const catalogo = useCatalogoEventos(ruta);
-  const eventosFiltrados = (catalogo.datos ?? []).filter(
-    (evento) => !fecha || evento.fecha === fecha,
-  );
-  const paginas = Math.ceil(eventosFiltrados.length / tamanioPagina);
-  const eventos = eventosFiltrados.slice(
-    (pagina - 1) * tamanioPagina,
-    pagina * tamanioPagina,
-  );
-  useEffect(() => {
-    if (
-      !catalogo.cargando &&
-      !catalogo.error &&
-      paginas > 0 &&
-      pagina > paginas
-    ) {
-      actualizarUrl(router, {
-        q: consulta,
-        categoria,
-        ciudad,
-        fecha,
-        orden,
-        pagina: String(paginas),
-      });
-    }
-  }, [
-    categoria,
-    catalogo.cargando,
-    catalogo.error,
-    ciudad,
-    consulta,
-    fecha,
-    pagina,
-    paginas,
-    orden,
-    router,
-  ]);
+  const periodo = parametros.has("periodo")
+    ? (parametros.get("periodo") ?? "")
+    : esPersonalizado
+      ? ""
+      : periodoPredeterminado;
+  const ciudad = parametros.has("ciudad")
+    ? (parametros.get("ciudad") ?? "")
+    : esPersonalizado
+      ? ""
+      : "Manizales";
+  const minimo = Number(parametros.get("precioMin"));
+  const maximo = Number(parametros.get("precioMax"));
+  const precioMinimo =
+    Number.isSafeInteger(minimo) &&
+    minimo >= precioMinimoPredeterminado &&
+    minimo <= precioMaximoPredeterminado
+      ? minimo
+      : precioMinimoPredeterminado;
+  const precioMaximo =
+    Number.isSafeInteger(maximo) &&
+    maximo >= precioMinimo &&
+    maximo <= precioMaximoPredeterminado
+      ? maximo
+      : precioMaximoPredeterminado;
+  const orden = (["fecha", "precio", "precio-desc"] as const).includes(
+    parametros.get("orden") as EventSort,
+  )
+    ? (parametros.get("orden") as EventSort)
+    : "fecha";
 
-  function buscar(evento: React.FormEvent<HTMLFormElement>) {
-    evento.preventDefault();
-    const datos = new FormData(evento.currentTarget);
-    actualizarUrl(router, {
-      q: String(datos.get("q") ?? "").trim(),
-      categoria: String(datos.get("categoria") ?? ""),
-      ciudad: String(datos.get("ciudad") ?? ""),
-      fecha: String(datos.get("fecha") ?? ""),
-      orden: String(datos.get("orden") ?? "fecha"),
-      pagina: "1",
+  const eventos = useMemo(
+    () =>
+      eventosMock
+        .filter(
+          (evento) =>
+            (categorias.length === 0 ||
+              categorias.includes(evento.categoria.toLowerCase())) &&
+            (!ciudad || evento.ciudad === ciudad) &&
+            evento.precio >= precioMinimo &&
+            evento.precio <= precioMaximo,
+        )
+        .sort((a, b) => {
+          if (orden === "precio") return a.precio - b.precio;
+          if (orden === "precio-desc") return b.precio - a.precio;
+          return a.fecha.localeCompare(b.fecha);
+        }),
+    [categorias, ciudad, orden, precioMinimo, precioMaximo],
+  );
+
+  function cambiarFiltros(cambios: Record<string, string>) {
+    const base = new URLSearchParams(parametros);
+    if (!esPersonalizado) {
+      if (!base.has("categoria")) {
+        base.set("categoria", categoriasPredeterminadas.join(","));
+      }
+      if (!base.has("periodo")) {
+        base.set("periodo", periodoPredeterminado);
+      }
+      if (!base.has("ciudad")) base.set("ciudad", "Manizales");
+      if (!base.has("precioMin")) {
+        base.set("precioMin", String(precioMinimoPredeterminado));
+      }
+      if (!base.has("precioMax")) {
+        base.set("precioMax", String(precioMaximoPredeterminado));
+      }
+    }
+    const siguientes = parametrosActualizados(base, cambios);
+    const query = siguientes.toString();
+    router.push(query ? `/explorar?${query}` : "/explorar");
+  }
+
+  function quitarCategoria(categoria: string) {
+    cambiarFiltros({
+      categoria: categorias.filter((actual) => actual !== categoria).join(","),
     });
   }
 
-  function abrirEvento(evento: Evento) {
+  function cambiarCategoria(categoria: string, seleccionado: boolean) {
+    const siguientes = seleccionado
+      ? [...categorias, categoria]
+      : categorias.filter((actual) => actual !== categoria);
+    cambiarFiltros({ categoria: siguientes.join(",") });
+  }
+
+  function abrirEvento(evento: EventoListado) {
+    const fecha = new Intl.DateTimeFormat(en ? "en-CO" : "es-CO", {
+      dateStyle: "full",
+      timeStyle: "short",
+      timeZone: "America/Bogota",
+    }).format(new Date(evento.fecha));
     setDetalle({
       titulo: evento.nombre,
-      descripcion: `${evento.horario} · ${evento.lugar}, ${evento.ciudad}`,
+      descripcion: `${fecha} · ${evento.lugar}, ${evento.ciudad}`,
       contenido: (
         <div className="resumen-evento">
-          <AficheEvento
-            variante={evento.arte}
-            color1={evento.color1}
-            color2={evento.color2}
-          />
-          <p>{dinero(evento.precio)} COP</p>
+          <AficheEvento variante={evento.arte} />
+          <p>
+            {textos.comun.desde}{" "}
+            {new Intl.NumberFormat(en ? "en-CO" : "es-CO", {
+              style: "currency",
+              currency: "COP",
+              maximumFractionDigits: 0,
+            })
+              .format(evento.precio)
+              .replace(/\s+/g, " ")}
+          </p>
         </div>
       ),
       cerrar: textos.comun.cerrar,
     });
   }
 
-  const categoriaSeleccionada = (categorias.find(
-    ({ id }) => id.toLowerCase() === categoria,
-  )?.id ?? "") as CategoriaEvento | "";
+  const formateadorMoneda = new Intl.NumberFormat(en ? "en-CO" : "es-CO", {
+    style: "currency",
+    currency: "COP",
+    maximumFractionDigits: 0,
+  });
+  const chips = [
+    ...categorias.map((categoria) => ({
+      id: `categoria-${categoria}`,
+      label:
+        textos.categorias[
+          categoriasMock.find(({ id }) => id.toLowerCase() === categoria)?.id ??
+            "Conciertos"
+        ],
+      onRemove: () => quitarCategoria(categoria),
+    })),
+    ...(ciudad
+      ? [
+          {
+            id: "ciudad",
+            label: ciudad,
+            onRemove: () => cambiarFiltros({ ciudad: "" }),
+          },
+        ]
+      : []),
+    ...(precioMinimo !== precioMinimoPredeterminado ||
+    precioMaximo !== precioMaximoPredeterminado
+      ? [
+          {
+            id: "precio",
+            label: `${formateadorMoneda.format(precioMinimo).replace(/\s+/g, " ")} – ${formateadorMoneda.format(precioMaximo).replace(/\s+/g, " ")}`,
+            onRemove: () =>
+              cambiarFiltros({
+                precioMin: String(precioMinimoPredeterminado),
+                precioMax: String(precioMaximoPredeterminado),
+              }),
+          },
+        ]
+      : []),
+    ...(periodo
+      ? [
+          {
+            id: "periodo",
+            label:
+              periodo === "fin-semana"
+                ? textos.explorar.esteFinDeSemana
+                : periodo === "personalizado"
+                  ? textos.explorar.elegirFechas
+                  : periodo === "hoy"
+                    ? textos.explorar.hoy
+                    : textos.explorar.esteMes,
+            onRemove: () => cambiarFiltros({ periodo: "" }),
+          },
+        ]
+      : []),
+  ];
 
   return (
     <LayoutPublico
       destino="/explorar"
       inicioDestino="/"
-      buscarDestino="#filtros-explorar"
+      buscarDestino="#resultados-explorar"
       etiqueta={textos.interfaz.explora}
       descripcion={textos.pie.descripcion}
       onCuenta={abrirCuenta}
     >
       <div className="ancho-home pagina-explorar">
         <header className="encabezado-explorar">
-          <p className="sobrelinea-explorar">{textos.explorar.eyebrow}</p>
+          <nav
+            className="migas-explorar"
+            aria-label={textos.interfaz.navegacion}
+          >
+            <Link href="/">{textos.interfaz.inicio}</Link>
+            <span aria-hidden="true">›</span>
+            <span aria-current="page">{textos.explorar.titulo}</span>
+          </nav>
           <h1>{textos.explorar.titulo.replace(" · Taquilla", "")}</h1>
-          <p>{textos.explorar.descripcion}</p>
+          <p role="status" aria-live="polite">
+            {formatearTexto(textos.explorar.resultados, {
+              cantidad: String(eventos.length),
+            })}
+          </p>
         </header>
 
-        <form
-          id="filtros-explorar"
-          className="filtros-explorar"
-          role="search"
-          aria-label={textos.explorar.filtroAria}
-          key={parametros.toString()}
-          onSubmit={buscar}
-        >
-          <label>
-            <span>{textos.explorar.eventoArtista}</span>
-            <input
-              type="search"
-              name="q"
-              defaultValue={consulta}
-              placeholder={textos.explorar.buscarEventos}
+        <div className="exploracion-layout">
+          <FilterSidebar
+            key={parametros.toString()}
+            categorias={categorias}
+            periodo={periodo}
+            ciudad={ciudad}
+            minimo={precioMinimo}
+            maximo={precioMaximo}
+            textos={textos.explorar}
+            nombresCategoria={textos.categorias}
+            idioma={idioma}
+            onCategoria={cambiarCategoria}
+            onPeriodo={(valor) => cambiarFiltros({ periodo: valor })}
+            onCiudad={(valor) => cambiarFiltros({ ciudad: valor })}
+            onPrecio={(min, max) =>
+              cambiarFiltros({
+                precioMin: String(min),
+                precioMax: String(max),
+              })
+            }
+            onLimpiar={() => router.push("/explorar?filtros=personalizados")}
+          />
+          <section
+            className="resultados-explorar"
+            id="resultados-explorar"
+            aria-label={textos.explorar.tituloResultados}
+          >
+            <div className="resultados-toolbar">
+              <FilterChips
+                filters={chips}
+                removeLabel={textos.explorar.limpiar}
+                ariaLabel={textos.explorar.filtrosActivos}
+              />
+              <SortSelect
+                value={orden}
+                label={textos.explorar.orden}
+                options={[
+                  { value: "fecha", label: textos.explorar.ordenFecha },
+                  { value: "precio", label: textos.explorar.ordenPrecio },
+                  {
+                    value: "precio-desc",
+                    label: textos.explorar.ordenPrecioMayor,
+                  },
+                ]}
+                onChange={(valor) => cambiarFiltros({ orden: valor })}
+              />
+            </div>
+            <EventGrid
+              eventos={eventos}
+              onVerEvento={abrirEvento}
+              ariaLabel={textos.explorar.tituloResultados}
             />
-          </label>
-          <label>
-            <span>{textos.explorar.categoria}</span>
-            <select
-              name="categoria"
-              defaultValue={categoriaSeleccionada}
-              disabled={categoriasRecurso.cargando || !!categoriasRecurso.error}
-            >
-              <option value="">{textos.explorar.todasCategorias}</option>
-              {categorias.map((opcion) => (
-                <option key={opcion.id} value={opcion.id.toLowerCase()}>
-                  {textos.categorias[opcion.id]}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <span>{textos.explorar.ciudad}</span>
-            <select
-              name="ciudad"
-              defaultValue={ciudad}
-              disabled={ciudadesRecurso.cargando || !!ciudadesRecurso.error}
-            >
-              <option value="">{textos.explorar.todasCiudades}</option>
-              {ciudades.map((opcion) => (
-                <option key={opcion} value={opcion}>
-                  {opcion}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <span>{textos.explorar.fecha}</span>
-            <input type="date" name="fecha" defaultValue={fecha} />
-          </label>
-          <label>
-            <span>{textos.explorar.orden}</span>
-            <select name="orden" defaultValue={orden}>
-              <option value="fecha">{textos.explorar.ordenFecha}</option>
-              <option value="precio">{textos.explorar.ordenPrecio}</option>
-              <option value="popularidad">
-                {textos.explorar.ordenPopularidad}
-              </option>
-            </select>
-          </label>
-          <div className="acciones-filtros">
-            <button type="submit" className="boton-home primario">
-              {formatearTexto(textos.explorar.aplicar, {
-                cantidad: String(eventosFiltrados.length),
-              })}
-            </button>
-            <button
-              type="button"
-              className="boton-limpiar-filtros"
-              onClick={() => router.push("/explorar")}
-            >
-              {textos.explorar.limpiar}
-            </button>
-          </div>
-        </form>
-
-        {(categoriasRecurso.error || ciudadesRecurso.error) && (
-          <div className="error-opciones-filtros" role="alert">
-            <p>{textos.explorar.errorOpciones}</p>
-            {categoriasRecurso.error && (
-              <button type="button" onClick={categoriasRecurso.recargar}>
-                {textos.explorar.reintentarCategorias}
-              </button>
-            )}
-            {ciudadesRecurso.error && (
-              <button type="button" onClick={ciudadesRecurso.recargar}>
-                {textos.explorar.reintentarCiudades}
-              </button>
-            )}
-          </div>
-        )}
-
-        <section
-          className="resultados-explorar"
-          aria-labelledby="titulo-resultados"
-        >
-          <div className="titulo-seccion">
-            <div>
-              <h2 id="titulo-resultados">{textos.explorar.tituloResultados}</h2>
-              <p role="status" aria-live="polite">
-                {catalogo.cargando
-                  ? textos.explorar.cargando
-                  : catalogo.error
-                    ? textos.explorar.errorCatalogo
-                    : formatearTexto(
-                        eventosFiltrados.length === 1
-                          ? textos.explorar.resultadoUno
-                          : textos.explorar.resultados,
-                        { cantidad: String(eventosFiltrados.length) },
-                      )}
-              </p>
-            </div>
-          </div>
-
-          {catalogo.cargando && (
-            <div className="eventos-grid" aria-busy="true">
-              {Array.from({ length: 4 }, (_, indice) => (
-                <div
-                  className="evento-cargando"
-                  key={`cargando-${indice}`}
-                  aria-hidden="true"
-                />
-              ))}
-            </div>
-          )}
-          {catalogo.error && (
-            <div className="estado-eventos" role="alert">
-              <p>{textos.explorar.errorCatalogo}</p>
-              <button
-                type="button"
-                className="boton-home primario"
-                onClick={catalogo.recargar}
-              >
-                {textos.explorar.reintentar}
-              </button>
-            </div>
-          )}
-          {!catalogo.cargando && !catalogo.error && eventos.length > 0 && (
-            <div className="eventos-grid">
-              {eventos.map((evento) => (
-                <TarjetaEvento
-                  key={evento.id}
-                  evento={evento}
-                  en={en}
-                  onAbrir={abrirEvento}
-                />
-              ))}
-            </div>
-          )}
-          {!catalogo.cargando &&
-            !catalogo.error &&
-            eventosFiltrados.length === 0 && (
-              <div className="sin-resultados">
-                <h3>{textos.explorar.sinResultados}</h3>
-                <p>{textos.explorar.sinResultadosDescripcion}</p>
-              </div>
-            )}
-
-          {!catalogo.cargando && !catalogo.error && paginas > 1 && (
-            <nav
-              className="paginacion-explorar"
-              aria-label={textos.explorar.navPaginas}
-            >
-              <button
-                type="button"
-                disabled={pagina <= 1}
-                onClick={() =>
-                  actualizarUrl(router, {
-                    q: consulta,
-                    categoria,
-                    ciudad,
-                    fecha,
-                    orden,
-                    pagina: String(pagina - 1),
-                  })
-                }
-              >
-                {textos.explorar.anterior}
-              </button>
-              <span aria-current="page">
-                {textos.explorar.pagina} {pagina} {textos.explorar.de} {paginas}
-              </span>
-              <button
-                type="button"
-                disabled={pagina >= paginas}
-                onClick={() =>
-                  actualizarUrl(router, {
-                    q: consulta,
-                    categoria,
-                    ciudad,
-                    fecha,
-                    orden,
-                    pagina: String(pagina + 1),
-                  })
-                }
-              >
-                {textos.explorar.siguiente}
-              </button>
-            </nav>
-          )}
-        </section>
+          </section>
+        </div>
       </div>
       <DialogoDetalle detalle={detalle} onCerrar={() => setDetalle(null)} />
     </LayoutPublico>

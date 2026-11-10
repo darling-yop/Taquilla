@@ -5,17 +5,12 @@
   .boton-menu {
     display: grid;
     place-items: center;
-    width: 44px;
-    height: 44px;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 auto;
     background: none;
     color: var(--tinta);
     border: 1px solid var(--borde);
     border-radius: 50%;
-  }
-}
-
-@media (max-width: 640px) {
-  .boton-menu {
-    flex-shrink: 0;
   }
 }

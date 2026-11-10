@@ -1,0 +1,51 @@
+export const textosCookies = {
+  cookies: "Preferencias de cookies",
+  banner: "Preferencias del navegador",
+  descripcion:
+    "Puedes permitir que este proyecto recuerde tu idioma. No utilizamos cookies de analítica ni publicidad.",
+  aceptar: "Aceptar preferencias",
+  rechazar: "Rechazar opcionales",
+  configurar: "Configurar",
+  guardar: "Guardar selección",
+  cerrar: "Cerrar preferencias",
+  necesarias: "Necesarias",
+  necesariasTexto: "Guardan tu decisión de consentimiento. Siempre activas.",
+  preferencias: "Recordar idioma",
+  preferenciasTexto: "Conserva el idioma elegido en este navegador.",
+  guardado: "Preferencias guardadas.",
+  error: "No pudimos guardar la decisión en este navegador.",
+  politica: "Política de privacidad",
+  politicaUrl: "/politica-de-privacidad",
+  politicaDescripcion:
+    "Este sitio almacena únicamente las preferencias necesarias para recordar tu consentimiento y el idioma elegido. No utilizamos cookies de analítica ni publicidad.",
+  politicaNecesarias: "Cookies necesarias",
+  politicaNecesariasTexto:
+    "Guardan tu decisión de consentimiento y permiten recordar las preferencias esenciales.",
+  politicaPreferencias: "Preferencia de idioma",
+  politicaPreferenciasTexto:
+    "El idioma seleccionado se guarda localmente para mantener la interfaz. Si aceptas las preferencias, también se almacena en una cookie.",
+  ariaBanner: "Aviso de preferencias de cookies",
+  ariaPreferencias: "Diálogo de preferencias de cookies",
+  ariaPolitica: "Política de privacidad y cookies",
+  ariaAceptar: "Aceptar preferencias de cookies",
+  ariaRechazar: "Rechazar cookies opcionales",
+  ariaConfigurar: "Configurar preferencias de cookies",
+  ariaGuardar: "Guardar preferencias de cookies",
+  ariaCerrar: "Cerrar preferencias de cookies",
+  ariaEnlacePolitica: "Leer la política de privacidad",
+} as const;
+
+export const textosCabecera = {
+  headerInicio: "Inicio",
+  headerExplorar: "Explorar",
+  headerIngresar: "Ingresar",
+  headerCrearCuenta: "Crear cuenta",
+  headerBuscar: "Buscar eventos o artistas",
+  headerNavegacion: "Navegación principal",
+  headerIdioma: "Seleccionar idioma",
+  headerAbrirMenu: "Abrir menú",
+  headerCerrarMenu: "Cerrar menú",
+  headerAbrirAccesibilidad: "Abrir panel de accesibilidad",
+  ariaIdiomaEs: "Cambiar a español",
+  ariaIdiomaEn: "Switch to English",
+};

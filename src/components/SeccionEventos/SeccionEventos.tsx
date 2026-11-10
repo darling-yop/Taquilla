@@ -1,4 +1,3 @@
-import Flecha from "../Flecha/Flecha";
 import TarjetaEvento from "../TarjetaEvento/TarjetaEvento";
 import { usePreferencias } from "../../context/PreferenciasContext";
 import type { Evento } from "../../types";
@@ -10,7 +9,6 @@ export default function SeccionEventos({
   eventos,
   en,
   onAbrir,
-  onVerTodos,
   cargando = false,
   error = null,
   onReintentar,
@@ -21,7 +19,6 @@ export default function SeccionEventos({
   eventos: Evento[];
   en: boolean;
   onAbrir: (evento: Evento) => void;
-  onVerTodos: () => void;
   cargando?: boolean;
   error?: Error | null;
   onReintentar?: () => void;
@@ -38,10 +35,6 @@ export default function SeccionEventos({
           <h2 id={`${id}-titulo`}>{titulo}</h2>
           <p role="status">{descripcion}</p>
         </div>
-        <button className="enlace-home" onClick={onVerTodos}>
-          {textos.comun.verTodos}
-          <Flecha />
-        </button>
       </div>
       <div className="eventos-grid" aria-busy={cargando}>
         {cargando && (
@@ -87,9 +80,6 @@ export default function SeccionEventos({
         <div className="sin-resultados">
           <h3>{textos.comun.noEncontrados}</h3>
           <p>{textos.comun.probarOtraBusqueda}</p>
-          <button className="boton-home primario" onClick={onVerTodos}>
-            {textos.comun.verTodosEventos}
-          </button>
         </div>
       )}
     </section>

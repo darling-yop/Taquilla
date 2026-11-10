@@ -117,7 +117,6 @@ export default function HomePage() {
           }
           eventos={filtros ? resultados : eventos.slice(0, 4)}
           onAbrir={abrirEvento}
-          onVerTodos={() => router.push("/explorar")}
           cargando={destacadosRecurso.cargando}
           error={destacadosRecurso.error}
           onReintentar={destacadosRecurso.recargar}
@@ -130,9 +129,6 @@ export default function HomePage() {
             descripcion={textos.inicio.descripcionManizales}
             eventos={eventosManizales}
             onAbrir={abrirEvento}
-            onVerTodos={() =>
-              router.push("/explorar?ciudad=Manizales&pagina=1")
-            }
             cargando={manizalesRecurso.cargando}
             error={manizalesRecurso.error}
             onReintentar={manizalesRecurso.recargar}

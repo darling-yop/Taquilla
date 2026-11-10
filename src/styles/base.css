@@ -43,8 +43,24 @@ select {
   font: inherit;
 }
 
+button,
+.filter-chip,
+select {
+  min-width: min-content;
+  interpolate-size: allow-keywords;
+  transition:
+    width 200ms ease,
+    min-width 200ms ease;
+}
+
 button {
   cursor: pointer;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+  animation-timing-function: ease;
 }
 
 img {

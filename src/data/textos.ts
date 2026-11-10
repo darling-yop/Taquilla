@@ -52,6 +52,7 @@ export interface TextosAplicacion {
     descripcionSeo: string;
     descripcion: string;
     filtroAria: string;
+    tituloFiltros: string;
     eventoArtista: string;
     buscarEventos: string;
     categoria: string;
@@ -59,9 +60,20 @@ export interface TextosAplicacion {
     ciudad: string;
     todasCiudades: string;
     fecha: string;
+    hoy: string;
+    esteFinDeSemana: string;
+    esteMes: string;
+    elegirFechas: string;
+    fechaInicio: string;
+    fechaFin: string;
+    precio: string;
+    precioMinimo: string;
+    precioMaximo: string;
+    filtrosActivos: string;
     orden: string;
     ordenFecha: string;
     ordenPrecio: string;
+    ordenPrecioMayor: string;
     ordenPopularidad: string;
     aplicar: string;
     limpiar: string;
@@ -85,13 +97,11 @@ export interface TextosAplicacion {
   comun: {
     desde: string;
     verEvento: string;
-    verTodos: string;
     cargandoEventos: string;
     errorEventos: string;
     reintentar: string;
     noEncontrados: string;
     probarOtraBusqueda: string;
-    verTodosEventos: string;
     cerrar: string;
     errorTraducciones: string;
   };

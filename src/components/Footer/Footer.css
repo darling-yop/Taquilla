@@ -1,11 +1,12 @@
 .pie-home {
   background: var(--superficie);
-  padding: 48px 0 24px;
+  margin-top: var(--espacio-footer);
+  padding: var(--espacio-footer) 0 var(--espacio-5);
 }
 .columnas-pie {
   display: grid;
   grid-template-columns: 2.6fr 1fr 1fr 1fr;
-  gap: 48px;
+  gap: var(--espacio-seccion);
 }
 .columnas-pie p {
   max-width: 300px;
@@ -39,8 +40,8 @@
 }
 .pie-creditos {
   border-top: 1px solid var(--borde);
-  margin-top: 32px;
-  padding-top: 20px;
+  margin-top: var(--espacio-seccion);
+  padding-top: var(--espacio-5);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -58,7 +59,7 @@
 
 @media (max-width: 900px) {
   .columnas-pie {
-    gap: 24px;
+    gap: var(--espacio-6);
     grid-template-columns: 2fr 1fr 1fr;
   }
 }
